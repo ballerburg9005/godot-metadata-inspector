@@ -11,7 +11,7 @@ You can use this most effectively to add custom variables to any node you want w
 INSTALL
 -------
 
-1. Download into folder [urproject]/addons/
+1. Put metadata-inspector folder into [urproject]/addons/
 2. Go Project -> Project Settings -> Plugins and activate Metadata Inspector
 
 TODO
