@@ -184,7 +184,7 @@ func update_from_textbox(obj, tpath):
 		): 
 		return true
 
-	return store_in_meta_dict_recursively(null, [] + tpath, key, save_val)
+	return store_in_meta_dict_recursively(metavals, [] + tpath, key, save_val)
 	
 	
 #	recurse(obj.get_parent().get_parent(), "")
@@ -199,9 +199,6 @@ func update_from_textbox(obj, tpath):
 
 
 func store_in_meta_dict_recursively(tn, tpath, tkey, tval):
-	if tn == null:
-		tn = metavals
-
 	if tpath.size() > 2:
 		var cur = tpath.pop_front()
 		return store_in_meta_dict_recursively(tn[cur], tpath, tkey, tval)
