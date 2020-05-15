@@ -18,7 +18,7 @@ TODO
 ----
 - right click key -> move entry up/down
 - doesn't trigger a "really quit changes will be lost" 
-(-undo / redo)
+- (undo / redo)
 - val2str for color is ugly 1,1,1,1 should be #FFFFFFF
 - restore cursor position to new entry field after pressing enter
 - maxentry limit = 60?
