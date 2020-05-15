@@ -26,3 +26,7 @@ TODO
 BUGS
 ----
 - vbox suddenly disappeared for seriously no reason and totally impossible by code 2020-05-15
+
+LICENSE
+-------
+MIT

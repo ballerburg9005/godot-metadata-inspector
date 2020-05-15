@@ -53,7 +53,7 @@ func _enter_tree():
 
 
 func update_node(n, act):
-	print("Updating: "+n.name)
+	#print("Updating: "+n.name)
 #	n.set_meta("weirddata", {"Label": Label.new(), "Quat": Quat(1,1,1,1), "mykey3": "myval3"})
 	#n.set_meta("nestedshit", ["array1", "array2", "array3", {"thisisdictkey1": "thisisdictval1", "thisisdictkey2": "thisisdictval2", "shit": [1,2,3,4,5]}])
 
