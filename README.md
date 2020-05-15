@@ -8,7 +8,14 @@ You can use this most effectively to add custom variables to any node you want w
 
 [![demo1](/demo1.jpg)](#)
 
-== TODO ==
+INSTALL
+-------
+
+1. Download into folder [urproject]/addons/
+2. Go Project -> Project Settings -> Plugins and activate Metadata Inspector
+
+TODO
+----
 - right click key -> move entry up/down
 - doesn't trigger a "really quit changes will be lost" 
 (-undo / redo)
@@ -16,5 +23,6 @@ You can use this most effectively to add custom variables to any node you want w
 - restore cursor position to new entry field after pressing enter
 - maxentry limit = 60?
 
-== BUGS ==
+BUGS
+----
 - vbox suddenly disappeared for seriously no reason and totally impossible by code 2020-05-15
