@@ -2,7 +2,7 @@ tool
 extends EditorInspectorPlugin
 
 
-# this is faux EditorInspectorPlugin is necessary to update the real EditorPlugin at the right time
+# this faux EditorInspectorPlugin is necessary to update the real EditorPlugin at the right time
 func can_handle (object):
 	if object.is_class("Node"):
 		for n0 in object.get_tree().get_root().get_children():
