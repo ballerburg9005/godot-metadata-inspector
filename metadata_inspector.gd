@@ -7,12 +7,15 @@ var metapanel
 var nonodelabel
 var vbox
 var plugin : EditorInspectorPlugin
+
 var realtime_updater : Node
 
 var is_metadata_inspector = false
 
 var metavals = {}
 var activenode = null
+var lastfocus_path = []
+var lastfocus_boxx = ""
 
 var l = TypeFormattingLogic.new()
 
@@ -58,7 +61,7 @@ func _enter_tree():
 
 func update_node(n, act):
 	#print("Updating: "+n.name)
-#	n.set_meta("weirddata", {"Label": Label.new(), "Quat": Quat(1,1,1,1), "mykey3": "myval3"})
+	#n.set_meta("mustbestring", {1.0: Label.new(), 55 : Quat(1,1,1,1), false: "myval3"})
 	#n.set_meta("nestedshit", ["array1", "array2", "array3", {"thisisdictkey1": "thisisdictval1", "thisisdictkey2": "thisisdictval2", "shit": [1,2,3,4,5]}])
 
 	for oldentries in vbox.get_children():
@@ -85,9 +88,9 @@ func update_node(n, act):
 
 	for key in metavals:
 		if n.has_method("remove_meta") or metavals[key] != null:
-			ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY)
+			ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY, [])
 	var dbox = ui_just_make_rootbox(vbox, "NEWENTRY")
-	ui_create_row(dbox, "", "", true, [true, true])
+	ui_create_row(dbox, "", "", true, [true, true], ["__NEWENTRY__"])
 
 	vbox.visible = true
 	nonodelabel.visible = false
@@ -131,7 +134,13 @@ func update_from_textboxes_recursively(tbox, tpath):
 		# this looks sort of super stupid, but in order to re-count array positions from scratch there seems to be no other way
 		var path = [[],[],[]]
 		if tbox.name.substr(0,7) == "RootBox":
-			path[0] = tpath[0] + [tbox.get_children()[0].get_node("./textbox_key").text]
+			var newkey
+			if tbox.get_children()[0].get_node("./textbox_key").editable:
+				newkey = tbox.get_children()[0].get_node("./textbox_key").text
+			else:
+				newkey = tbox.get_children()[0].get_node("./textbox_key").get_meta("oval")
+
+			path[0] = tpath[0] + [newkey]
 			path[1] = tpath[1] + [typeof(tbox.get_children()[0].get_node("./textbox_val").get_meta("oval"))]
 			path[2] = tpath[2] + [0]
 			
@@ -149,6 +158,24 @@ func update_from_textboxes_recursively(tbox, tpath):
 			failure += update_from_textboxes_recursively(n, path)
 	return failure
 
+func save_focus(obj, tpath, isnew):
+	var poppedpath = [] + tpath
+	poppedpath.pop_back()
+	
+	if obj.get_node("./textbox_key").has_focus():
+		if isnew:
+			lastfocus_path = poppedpath
+			lastfocus_boxx = "new"
+		else:
+			lastfocus_path = tpath
+			lastfocus_boxx = "key"
+	elif obj.get_node("./textbox_val").has_focus():
+		if isnew:
+			lastfocus_path = poppedpath
+			lastfocus_boxx = "new"
+		else:
+			lastfocus_path = tpath
+			lastfocus_boxx = "val"
 
 func update_from_textbox(obj, tpath):
 
@@ -164,8 +191,12 @@ func update_from_textbox(obj, tpath):
 	if obj.get_node("./textbox_val").has_meta("type"):
 		typ = obj.get_node("./textbox_val").get_meta("type")
 
-	var save_val	
+	var save_val = oval
+	var save_key = key
 	
+	if not obj.get_node("./textbox_key").editable:
+		save_key = okey
+
 	if( (obj.get_node("./textbox_val").editable)
 	and (typeof(oval) != typ or l.custom_val2str(oval) != val)
 	):
@@ -181,10 +212,11 @@ func update_from_textbox(obj, tpath):
 	else:
 		save_val = oval
 
-	if typeof(oval) == TYPE_DICTIONARY:
-		save_val = {}
-	if typeof(oval) == TYPE_ARRAY:
-		save_val = []
+	if typeof(save_key) == TYPE_STRING:
+		if typeof(oval) == TYPE_DICTIONARY:
+			save_val = {}
+		if typeof(oval) == TYPE_ARRAY:
+			save_val = []
 		
 	if ( 	(isnew)
 		and (val.length() == 0 or not obj.get_node("./textbox_val").editable)
@@ -193,7 +225,9 @@ func update_from_textbox(obj, tpath):
 		): 
 		return true
 
-	return store_in_meta_dict_recursively(metavals, [] + tpath, key, save_val)
+	save_focus(obj, tpath, isnew)
+	
+	return store_in_meta_dict_recursively(metavals, [] + tpath, save_key, save_val)
 	
 	
 #	recurse(obj.get_parent().get_parent(), "")
@@ -212,7 +246,6 @@ func store_in_meta_dict_recursively(tn, tpath, tkey, tval):
 		var cur = tpath.pop_front()
 		return store_in_meta_dict_recursively(tn[cur], tpath, tkey, tval)
 	elif  tpath.size() == 2:
-#		print(tpath)
 		if typeof(tn[tpath[0]]) == TYPE_ARRAY:
 			tn[tpath[0]].push_back(tval)
 			return true
@@ -318,32 +351,35 @@ func ui_resize_child_labels(tbox):
 			n.set_size(tbox.get_size())
 
 
-func ui_create_rows_recursively(tval, tkey, tbox, ttype):
+func ui_create_rows_recursively(tval, tkey, tbox, ttype, tpath):
 	var box = ui_just_make_rootbox(tbox, tkey)
 	
 	var editables = [true, true]
 	if ttype == TYPE_ARRAY:
 		editables = [false, true]
 		
-	if typeof(tval) == TYPE_DICTIONARY:
-		ui_create_row(box, tkey, tval, false, [editables[0], false])
-		var dbox = ui_just_make_subboxes(box)
-		for key in tval.keys():
-			ui_create_rows_recursively(tval[key], key, dbox, typeof(tval))
-		var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
-		ui_create_row(ddbox, "", "", true, [true, true])
-	elif typeof(tval) == TYPE_ARRAY:
-		ui_create_row(box, tkey, tval, false, [editables[0], false])
-		var dbox = ui_just_make_subboxes(box)
-		for i in range(0, tval.size()):
-			ui_create_rows_recursively(tval[i], i, dbox, typeof(tval))
-		var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
-		ui_create_row(ddbox, str(tval.size()), "", true, [false, true])
+	if typeof(tkey) != TYPE_STRING:
+		ui_create_row(box, tkey, tval, false, [false, false], tpath + [tkey])
 	else:
-		ui_create_row(box, tkey, tval, false, editables)
+		if typeof(tval) == TYPE_DICTIONARY:
+			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey])
+			var dbox = ui_just_make_subboxes(box)
+			for key in tval.keys():
+				ui_create_rows_recursively(tval[key], key, dbox, typeof(tval), tpath + [tkey])
+			var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
+			ui_create_row(ddbox, "", "", true, [true, true], tpath + [tkey] + ["__NEWENTRY__"])
+		elif typeof(tval) == TYPE_ARRAY:
+			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey])
+			var dbox = ui_just_make_subboxes(box)
+			for i in range(0, tval.size()):
+				ui_create_rows_recursively(tval[i], i, dbox, typeof(tval), tpath + [tkey])
+			var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
+			ui_create_row(ddbox, str(tval.size()), "", true, [false, true], tpath + [tkey] + ["__NEWENTRY__"])
+		else:
+			ui_create_row(box, tkey, tval, false, editables, tpath + [tkey])
 
 
-func ui_create_row(box, tkey, tval, isnew, editables):
+func ui_create_row(box, tkey, tval, isnew, editables, tpath):
 
 	var dbox = HBoxContainer.new()
 	dbox.size_flags_horizontal = dbox.SIZE_EXPAND_FILL
@@ -354,6 +390,7 @@ func ui_create_row(box, tkey, tval, isnew, editables):
 	textbox1.size_flags_horizontal = textbox1.SIZE_EXPAND_FILL
 	textbox1.editable = editables[0]
 	textbox1.set_text(str(tkey))
+	textbox1.set_cursor_position(1337)
 	textbox1.set_meta("oval", tkey)
 	textbox1.set_meta("isnew", isnew)
 	textbox1.connect("resized", self, "ui_resize_child_labels", [textbox1])
@@ -384,6 +421,7 @@ func ui_create_row(box, tkey, tval, isnew, editables):
 	textbox2.name = "textbox_val"
 	textbox2.size_flags_horizontal = textbox2.SIZE_EXPAND_FILL
 	textbox2.set_text(l.custom_val2str(tval))
+	textbox2.set_cursor_position(1337)
 	textbox2.editable = editables[1]
 
 	textbox2.set_meta("oval", tval)
@@ -418,6 +456,24 @@ func ui_create_row(box, tkey, tval, isnew, editables):
 	textbox1.connect("text_entered", self, "update_all_from_ui")
 	textbox2.connect("text_changed", self, "ui_color_indicate_textbox", [textbox2])
 	textbox2.connect("text_entered", self, "update_all_from_ui")
+	
+	if typeof(tkey) != TYPE_STRING:
+		textbox1.editable = false
+		textbox2.editable = false
+	
+	var poppedpath = [] + tpath
+	poppedpath.pop_back()
+	if isnew and poppedpath == lastfocus_path:
+		if textbox1.editable:
+			textbox1.grab_focus()
+		else:
+			textbox2.grab_focus()
+	else:
+		if tpath == lastfocus_path:
+			if lastfocus_boxx == "key":
+				textbox1.grab_focus()
+			elif lastfocus_boxx == "val":
+				textbox2.grab_focus()
 
 
 func ui_just_make_rootbox(tbox, name):

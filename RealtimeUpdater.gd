@@ -7,7 +7,7 @@ func _ready():
 
 func _process(delta):
 	if counter == 30:
-		print(Engine.is_editor_hint())
+		#print(Engine.is_editor_hint())
 		if( self.get_tree().has_method("is_editor_hint") and not self.get_tree().is_editor_hint()
 		or( not Engine.is_editor_hint())
 				):

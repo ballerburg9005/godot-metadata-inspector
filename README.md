@@ -19,7 +19,6 @@ TODO
 - right click key -> move entry up/down
 - doesn't trigger a "really quit changes will be lost" 
 - undo / redo
-- restore cursor position to new entry field after pressing enter
 - maxentry limit = 60?
 - keyboard-only redy shortcuts
 - it will probably bug out on non-string keys in dictionaries and delete all your stuff!
