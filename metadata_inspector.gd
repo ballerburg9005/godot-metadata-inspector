@@ -21,7 +21,7 @@ func _enter_tree():
 		destroy_old()
 
 		# this is a faux EditorInspectorPlugin, that just catches the node change
-	plugin = preload("res://addons/metadata_inspector/CustomInspectorPlugin.gd").new()
+	plugin = preload("./CustomInspectorPlugin.gd").new()
 	add_inspector_plugin(plugin)
 
 
@@ -71,12 +71,17 @@ func update_node(n, act):
 	elif act == "save":
 		for key in n.get_meta_list():
 			if typeof(key) == TYPE_STRING:
-				n.remove_meta(key)
+				# Godot 3.1 has no remove_meta and uses null instead
+				if n.has_method("remove_meta"):
+					n.remove_meta(key)
+				else:
+					n.set_meta(key, null)
 		for key in metavals:
 			n.set_meta(key, metavals[key])
 
 	for key in metavals:
-		ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY)
+		if n.has_method("remove_meta") or metavals[key] != null:
+			ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY)
 	var dbox = ui_just_make_rootbox(vbox, "NEWENTRY")
 	ui_create_row(dbox, "", "", true, [true, true])
 

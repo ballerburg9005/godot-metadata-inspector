@@ -39,11 +39,11 @@ func guess_my_type(tval):
 	elif tval.to_upper().replace(" ", "") in ["FALSE","TRUE"]:
 		return TYPE_BOOL
 	elif is_number_tuple(tval):
-		if tval.count(",") == 1:
+		if count(tval, ",") == 1:
 			return TYPE_VECTOR2
-		elif tval.count(",") == 2:
+		elif count(tval, ",") == 2:
 			return TYPE_VECTOR3
-		elif tval.count(",") == 3:
+		elif count(tval, ",") == 3:
 			return TYPE_COLOR		# or TYPE_RECT2
 	else:
 		return typeof(tval)
@@ -124,7 +124,7 @@ func is_hex_color(val):
 
 
 func is_number(val):
-	if val.count(".") > 1:
+	if count(val, ".") > 1:
 		return false
 
 	var stripped = val.replace(".", "").replace(" ", "")
@@ -143,3 +143,10 @@ func is_number_tuple(val):
 		if not is_number(num):
 			return false
 	return true
+
+func count(s, w):
+	var i = 0
+	for c in s:
+		if c == w:
+			i += 1
+	return i

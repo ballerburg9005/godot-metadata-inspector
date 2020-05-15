@@ -1,7 +1,7 @@
 Metadata-Inspector
 ==================
 
-This Godot 3.2 Plugin allows you to view and edit hidden Metadata.
+This Godot 3.2 / 3.1 Plugin allows you to view and edit hidden Metadata.
 
 You can use this most effectively to add custom variables to any node you want without using or attaching any scripts.
 
@@ -22,6 +22,8 @@ TODO
 - val2str for color is ugly 1,1,1,1 should be #FFFFFFF and tuples have brackets sometimes ()
 - restore cursor position to new entry field after pressing enter
 - maxentry limit = 60?
+- keyboard-only redy shortcuts
+- it will probably bug out on non-string keys in dictionaries and delete all your stuff!
 
 BUGS
 ----
