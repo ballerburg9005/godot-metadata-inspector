@@ -84,40 +84,61 @@ func update_node(n, act):
 	nonodelabel.visible = false
 
 
-func ui_make_error_popup(txt):
-	var dia = AcceptDialog.new()
-	dia.dialog_text = txt
-	#reely.connect("confirmed", self, "delete_and_update_meta", [null, tpath])
-	dia.connect("popup_hide", dia, "queue_free")
-	activenode.get_tree().get_root().add_child(dia)
-	dia.popup_centered()
+func delete_entry_from_ui_and_update(unused, obj):
+	var rootbox = obj.get_parent().get_parent()
+	var parent = rootbox.get_parent()
+
+	var children = []
+	for n in parent.get_children():
+		children.push_back(n)
+	
+	parent.remove_child(rootbox)
+	
+	if update_all_from_ui(null):
+		rootbox.queue_free()
+	else:
+		for n in parent.get_children():
+			parent.remove_child(n)
+		for n in children:
+			parent.add_child(n)
 
 
-func store_in_meta_dict_if_no_dup(obj, tkey, tval):
-	if not obj.has(tkey):
-		obj[tkey] = tval
+func update_all_from_ui(unused):
+	metavals = {}
+		
+	if update_from_textboxes_recursively(vbox, [[],[],[]]) == 0:
+		update_node(activenode, "save")
 		return true
 	else:
-		ui_make_error_popup("Duplicate key \""+tkey+"\", not updating!")
+		print("Unknown error while updating! (dup vals?)")
 		return false
 
 
-func store_in_meta_dict(tn, tpath, tkey, tval):
-	if tn == null:
-		tn = metavals
+func update_from_textboxes_recursively(tbox, tpath):
+	var failure = 0
 
-	if tpath.size() > 2:
-		var cur = tpath.pop_front()
-		return store_in_meta_dict(tn[cur], tpath, tkey, tval)
-	elif  tpath.size() == 2:
-#		print(tpath)
-		if typeof(tn[tpath[0]]) == TYPE_ARRAY:
-			tn[tpath[0]].push_back(tval)
-			return true
+	if tbox.is_class("Node"):
+		
+		# this looks sort of super stupid, but in order to re-count array positions from scratch there seems to be no other way
+		var path = [[],[],[]]
+		if tbox.name.substr(0,7) == "RootBox":
+			path[0] = tpath[0] + [tbox.get_children()[0].get_node("./textbox_key").text]
+			path[1] = tpath[1] + [typeof(tbox.get_children()[0].get_node("./textbox_val").get_meta("oval"))]
+			path[2] = tpath[2] + [0]
+			
+			if path[0].size() > 1:
+				if tpath[1][-1] == TYPE_ARRAY:
+					path[0][-1] = tpath[2][-1]
+				tpath[2][-1] += 1
 		else:
-			return store_in_meta_dict_if_no_dup(tn[tpath[0]], tkey, tval)
-	elif tpath.size() < 2:
-			return store_in_meta_dict_if_no_dup(tn, tkey, tval)
+			path = tpath
+			
+		for n in tbox.get_children():
+			if n.has_node("./textbox_key"):
+				if not update_from_textbox(n, path[0]):
+					failure += 1
+			failure += update_from_textboxes_recursively(n, path)
+	return failure
 
 
 func update_from_textbox(obj, tpath):
@@ -163,65 +184,9 @@ func update_from_textbox(obj, tpath):
 		): 
 		return true
 
-	return store_in_meta_dict(null, [] + tpath, key, save_val)
-
-
-func update_from_textboxes(tbox, tpath):
-	var failure = 0
-
-	if tbox.is_class("Node"):
-		
-		# this looks sort of super stupid, but in order to re-count array positions from scratch there seems to be no other way
-		var path = [[],[],[]]
-		if tbox.name.substr(0,7) == "RootBox":
-			path[0] = tpath[0] + [tbox.get_children()[0].get_node("./textbox_key").text]
-			path[1] = tpath[1] + [typeof(tbox.get_children()[0].get_node("./textbox_val").get_meta("oval"))]
-			path[2] = tpath[2] + [0]
-			
-			if path[0].size() > 1:
-				if tpath[1][-1] == TYPE_ARRAY:
-					path[0][-1] = tpath[2][-1]
-				tpath[2][-1] += 1
-		else:
-			path = tpath
-			
-		for n in tbox.get_children():
-			if n.has_node("./textbox_key"):
-				if not update_from_textbox(n, path[0]):
-					failure += 1
-			failure += update_from_textboxes(n, path)
-	return failure
-
-func update_all_from_ui(unused):
-	metavals = {}
-		
-	if update_from_textboxes(vbox, [[],[],[]]) == 0:
-		update_node(activenode, "save")
-		return true
-	else:
-		print("Unknown error while updating! (dup vals?)")
-		return false
-
-
-func delete_entry_from_ui_and_update(unused, obj):
-	var rootbox = obj.get_parent().get_parent()
-	var parent = rootbox.get_parent()
-
-	var children = []
-	for n in parent.get_children():
-		children.push_back(n)
+	return store_in_meta_dict_recursively(null, [] + tpath, key, save_val)
 	
-	parent.remove_child(rootbox)
 	
-	if update_all_from_ui(null):
-		rootbox.queue_free()
-	else:
-		for n in parent.get_children():
-			parent.remove_child(n)
-		for n in children:
-			parent.add_child(n)
-
-
 #	recurse(obj.get_parent().get_parent(), "")
 #func recurse(obj, level):
 #	if obj.name == "textbox_key":
@@ -231,7 +196,52 @@ func delete_entry_from_ui_and_update(unused, obj):
 #		
 #	for n in obj.get_children():
 #		recurse(n, level+"   ")
-		
+
+
+func store_in_meta_dict_recursively(tn, tpath, tkey, tval):
+	if tn == null:
+		tn = metavals
+
+	if tpath.size() > 2:
+		var cur = tpath.pop_front()
+		return store_in_meta_dict_recursively(tn[cur], tpath, tkey, tval)
+	elif  tpath.size() == 2:
+#		print(tpath)
+		if typeof(tn[tpath[0]]) == TYPE_ARRAY:
+			tn[tpath[0]].push_back(tval)
+			return true
+		else:
+			return store_in_meta_dict_if_no_dup(tn[tpath[0]], tkey, tval)
+	elif tpath.size() < 2:
+			return store_in_meta_dict_if_no_dup(tn, tkey, tval)
+
+
+func store_in_meta_dict_if_no_dup(obj, tkey, tval):
+	if not obj.has(tkey):
+		obj[tkey] = tval
+		return true
+	else:
+		ui_make_error_popup("Duplicate key \""+tkey+"\", not updating!")
+		return false
+
+
+func ui_make_error_popup(txt):
+	var dia = AcceptDialog.new()
+	dia.dialog_text = txt
+	#reely.connect("confirmed", self, "delete_and_update_meta", [null, tpath])
+	dia.connect("popup_hide", dia, "queue_free")
+	activenode.get_tree().get_root().add_child(dia)
+	dia.popup_centered()
+
+
+func change_saved_type(ttype, obj):
+	obj.set_meta("type", ttype)
+	if not ttype in l.supported_type_names.keys():
+		obj.editable = false
+
+	ui_color_indicate_textbox(obj.text, obj)
+
+
 func ui_color_indicate_textbox(txt, obj):
 	if ( txt != str(obj.get_meta("oval"))
 	or ( obj.has_meta("type") and obj.get_meta("type") != typeof(obj.get_meta("oval")) )):
@@ -262,14 +272,6 @@ func ui_color_indicate_textbox(txt, obj):
 				n.visible = true
 	else:
 		obj.modulate = Color(1,1,1)
-
-
-func change_saved_type(ttype, obj):
-	obj.set_meta("type", ttype)
-	if not ttype in l.supported_type_names.keys():
-		obj.editable = false
-
-	ui_color_indicate_textbox(obj.text, obj)
 
 
 func ui_context_menu(ev, obj, act):
@@ -310,18 +312,29 @@ func ui_resize_child_labels(tbox):
 			n.set_size(tbox.get_size())
 
 
-func ui_just_make_subboxes(tbox):
-	var dbox = HBoxContainer.new()
-	dbox.size_flags_horizontal = dbox.SIZE_EXPAND_FILL
-	tbox.add_child(dbox)
-	var ddbox1 = Panel.new()
-	ddbox1.set_custom_minimum_size(Vector2(1,0))
-	dbox.add_child(ddbox1)
-	var ddbox2 = VBoxContainer.new()
-	ddbox2.size_flags_horizontal = ddbox2.SIZE_EXPAND_FILL
-	dbox.add_child(ddbox2)
-
-	return ddbox2
+func ui_create_rows_recursively(tval, tkey, tbox, ttype):
+	var box = ui_just_make_rootbox(tbox, tkey)
+	
+	var editables = [true, true]
+	if ttype == TYPE_ARRAY:
+		editables = [false, true]
+		
+	if typeof(tval) == TYPE_DICTIONARY:
+		ui_create_row(box, tkey, tval, false, [editables[0], false])
+		var dbox = ui_just_make_subboxes(box)
+		for key in tval.keys():
+			ui_create_rows_recursively(tval[key], key, dbox, typeof(tval))
+		var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
+		ui_create_row(ddbox, "", "", true, [true, true])
+	elif typeof(tval) == TYPE_ARRAY:
+		ui_create_row(box, tkey, tval, false, [editables[0], false])
+		var dbox = ui_just_make_subboxes(box)
+		for i in range(0, tval.size()):
+			ui_create_rows_recursively(tval[i], i, dbox, typeof(tval))
+		var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
+		ui_create_row(ddbox, str(tval.size()), "", true, [false, true])
+	else:
+		ui_create_row(box, tkey, tval, false, editables)
 
 
 func ui_create_row(box, tkey, tval, isnew, editables):
@@ -409,29 +422,18 @@ func ui_just_make_rootbox(tbox, name):
 	return box
 	
 	
-func ui_create_rows_recursively(tval, tkey, tbox, ttype):
-	var box = ui_just_make_rootbox(tbox, tkey)
-	
-	var editables = [true, true]
-	if ttype == TYPE_ARRAY:
-		editables = [false, true]
-		
-	if typeof(tval) == TYPE_DICTIONARY:
-		ui_create_row(box, tkey, tval, false, [editables[0], false])
-		var dbox = ui_just_make_subboxes(box)
-		for key in tval.keys():
-			ui_create_rows_recursively(tval[key], key, dbox, typeof(tval))
-		var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
-		ui_create_row(ddbox, "", "", true, [true, true])
-	elif typeof(tval) == TYPE_ARRAY:
-		ui_create_row(box, tkey, tval, false, [editables[0], false])
-		var dbox = ui_just_make_subboxes(box)
-		for i in range(0, tval.size()):
-			ui_create_rows_recursively(tval[i], i, dbox, typeof(tval))
-		var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
-		ui_create_row(ddbox, str(tval.size()), "", true, [false, true])
-	else:
-		ui_create_row(box, tkey, tval, false, editables)
+func ui_just_make_subboxes(tbox):
+	var dbox = HBoxContainer.new()
+	dbox.size_flags_horizontal = dbox.SIZE_EXPAND_FILL
+	tbox.add_child(dbox)
+	var ddbox1 = Panel.new()
+	ddbox1.set_custom_minimum_size(Vector2(1,0))
+	dbox.add_child(ddbox1)
+	var ddbox2 = VBoxContainer.new()
+	ddbox2.size_flags_horizontal = ddbox2.SIZE_EXPAND_FILL
+	dbox.add_child(ddbox2)
+
+	return ddbox2
 
 
 func set_node_not_editable():
@@ -453,10 +455,6 @@ func destroy_old():
 
 func get_plugin_name():
 	return "Metadata Inspector"
-
-
-
-
 
 
 #func get_plugin_icon():
