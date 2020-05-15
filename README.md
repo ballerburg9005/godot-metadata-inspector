@@ -25,6 +25,8 @@ TODO
 - keyboard-only redy shortcuts
 - it will probably bug out on non-string keys in dictionaries and delete all your stuff!
 
+- update metadata at runtime (while game is running)
+
 BUGS
 ----
 - vbox suddenly disappeared for seriously no reason and totally impossible by code 2020-05-15
