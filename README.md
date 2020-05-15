@@ -21,7 +21,6 @@ TODO
 - undo / redo
 - maxentry limit = 60?
 - keyboard-only redy shortcuts
-- it will probably bug out on non-string keys in dictionaries and delete all your stuff!
 
 - update metadata at runtime (while game is running)
 
