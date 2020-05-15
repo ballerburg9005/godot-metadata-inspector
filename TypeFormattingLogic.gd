@@ -48,6 +48,14 @@ func guess_my_type(tval):
 	else:
 		return typeof(tval)
 
+func custom_val2str(val):
+	var typ = typeof(val)
+	if typ == TYPE_COLOR:
+		return "#"+val.to_html(true).to_upper()
+	elif typ in [TYPE_VECTOR2, TYPE_VECTOR3, TYPE_RECT2]:
+		return str(val).replace("(", "").replace(")", "")
+		
+	return str(val)
 
 func custom_convert(val, typ):
 	if typeof(val) == typ:		# this should be unused

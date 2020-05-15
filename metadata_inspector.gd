@@ -165,9 +165,9 @@ func update_from_textbox(obj, tpath):
 		typ = obj.get_node("./textbox_val").get_meta("type")
 
 	var save_val	
-	# TODO this only detects change correctly in the sense of val2str(str2val(x)) needs str(oval) replaced with custom function to allow for e.g. #FFFFFF to go back and forth
+	
 	if( (obj.get_node("./textbox_val").editable)
-	and (typeof(oval) != typ or str(oval) != val)
+	and (typeof(oval) != typ or l.custom_val2str(oval) != val)
 	):
 		if typ == null:
 			typ = l.guess_my_type(val)
@@ -383,7 +383,7 @@ func ui_create_row(box, tkey, tval, isnew, editables):
 	var textbox2 = LineEdit.new()
 	textbox2.name = "textbox_val"
 	textbox2.size_flags_horizontal = textbox2.SIZE_EXPAND_FILL
-	textbox2.set_text(str(tval))
+	textbox2.set_text(l.custom_val2str(tval))
 	textbox2.editable = editables[1]
 
 	textbox2.set_meta("oval", tval)
