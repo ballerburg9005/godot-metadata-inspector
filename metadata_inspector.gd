@@ -25,13 +25,11 @@ func _enter_tree():
 	while(destroy_old()):
 		destroy_old()
 
-		# this is a faux EditorInspectorPlugin, that just catches the node change
 	plugin = preload("./CustomInspectorPlugin.gd").new()
 	add_inspector_plugin(plugin)
 
 #	realtime_updater = preload("./RealtimeUpdater.gd").new()
 #	self.add_child(realtime_updater)
-	
 
 	metapanel = ScrollContainer.new()
 	metapanel.name = "Meta"
@@ -75,7 +73,7 @@ func update_node(n, act):
 			if typeof(key) == TYPE_STRING:
 				metavals[key] = n.get_meta(key)
 			else:
-				print("Weird meta index, not string, ignoring: "+str(key))
+				print("Metadata Inspector: Weird meta index, not string, ignoring: "+str(key))
 	elif act == "save":
 		for key in n.get_meta_list():
 			if typeof(key) == TYPE_STRING:
@@ -123,7 +121,7 @@ func update_all_from_ui(unused):
 		update_node(activenode, "save")
 		return true
 	else:
-		print("Unknown error while updating! (dup vals?)")
+		print("Metadata Inspector: Unknown error while updating! (dup vals?)")
 		return false
 
 
@@ -520,10 +518,10 @@ func get_plugin_name():
 	return "Metadata Inspector"
 
 
-func _process(delta):
-	fpscounter = (fpscounter + 1)%999999999
-	if fpscounter%30 == 0:
-		print(fpscounter)
+#func _process(delta):
+#	fpscounter = (fpscounter + 1)%999999999
+#	if fpscounter%30 == 0:
+#		print(fpscounter)
 
 
 
