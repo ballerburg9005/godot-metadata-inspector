@@ -19,6 +19,7 @@ var lastfocus_boxx = ""
 
 var l = TypeFormattingLogic.new()
 
+var fpscounter = 0
 
 func _enter_tree():
 	while(destroy_old()):
@@ -517,6 +518,21 @@ func destroy_old():
 
 func get_plugin_name():
 	return "Metadata Inspector"
+
+
+func _process(delta):
+	fpscounter = (fpscounter + 1)%999999999
+	if fpscounter%30 == 0:
+		print(fpscounter)
+
+
+
+
+
+
+
+
+
 
 
 #func get_plugin_icon():
