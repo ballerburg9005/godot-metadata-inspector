@@ -9,5 +9,5 @@ func can_handle (object):
 			for n1 in n0.get_children():
 				if n1.is_class("EditorPlugin"):
 					if "is_metadata_inspector" in n1:
-						n1.update_node(object, "load")
+						n1.update_node(object, ["load"], {}, [[], ""])
 	return false

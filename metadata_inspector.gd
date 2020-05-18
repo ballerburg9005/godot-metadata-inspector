@@ -12,14 +12,20 @@ var plugin : EditorInspectorPlugin
 
 var is_metadata_inspector = false
 
-var metavals = {}
 var activenode = null
-var lastfocus_path = []
-var lastfocus_boxx = ""
+var lastfocus = [[], ""]
+
 
 var l = TypeFormattingLogic.new()
 
 var fpscounter = 0
+
+
+var global_choices   = ["delete", "undo", "redo", "move↑", "move↓"]
+var global_shortcuts = [KEY_DELETE, KEY_Z, KEY_Z, KEY_UP, KEY_DOWN]
+var global_mods      = ["c", "c", "cs", "c", "c"]
+
+var prev_rootbox
 
 func _enter_tree():
 	while(destroy_old()):
@@ -57,8 +63,16 @@ func _enter_tree():
 
 	is_metadata_inspector = true
 
+func get_metavals(n):
+	var metavals = {}
+	for key in n.get_meta_list():
+		if typeof(key) == TYPE_STRING:
+			metavals[key] = n.get_meta(key)
+		else:
+			print("Metadata Inspector: Weird meta index, not string, ignoring: "+str(key))
+	return metavals
 
-func update_node(n, act):
+func update_node(n, act, save_metavals, focus):
 	#print("Updating: "+n.name)
 	#n.set_meta("mustbestring", {1.0: Label.new(), 55 : Quat(1,1,1,1), false: "myval3"})
 	#n.set_meta("nestedshit", ["array1", "array2", "array3", {"thisisdictkey1": "thisisdictval1", "thisisdictkey2": "thisisdictval2", "shit": [1,2,3,4,5]}])
@@ -66,36 +80,41 @@ func update_node(n, act):
 	for oldentries in vbox.get_children():
 		oldentries.call_deferred('free')
 
-	if act == "load":
-		metavals = {}
-		activenode = n
-		for key in n.get_meta_list():
-			if typeof(key) == TYPE_STRING:
-				metavals[key] = n.get_meta(key)
-			else:
-				print("Metadata Inspector: Weird meta index, not string, ignoring: "+str(key))
-	elif act == "save":
-		for key in n.get_meta_list():
-			if typeof(key) == TYPE_STRING:
-				# Godot 3.1 has no remove_meta and uses null instead
-				if n.has_method("remove_meta"):
-					n.remove_meta(key)
-				else:
-					n.set_meta(key, null)
+
+	if is_instance_valid(n) and not n.is_queued_for_deletion():
+		if "save" in act:
+			for key in n.get_meta_list():
+				if typeof(key) == TYPE_STRING:
+					# Godot 3.1 has no remove_meta and uses null instead
+					if n.has_method("remove_meta"):
+						n.remove_meta(key)
+					else:
+						n.set_meta(key, null)
+			for key in save_metavals:
+				n.set_meta(key, save_metavals[key])
+		
+		prev_rootbox = vbox
+		var metavals = get_metavals(n)
 		for key in metavals:
-			n.set_meta(key, metavals[key])
+			if n.has_method("remove_meta") or metavals[key] != null:
+				ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY, [], focus)
+		var dbox = ui_just_make_rootbox(vbox, "NEWENTRY")
+		ui_create_row(dbox, "", "", true, [true, true], ["__NEWENTRY__"], focus)
+		
+		vbox.visible = true
+		nonodelabel.visible = false
+		
+		var oldactivenode = activenode
+		activenode = n
+		if oldactivenode != null and oldactivenode != activenode:
+			get_editor_interface().get_selection().clear()
+			get_editor_interface().get_selection().add_node(activenode)
+	else:
+		vbox.visible = false
+		nonodelabel.visible = true
 
-	for key in metavals:
-		if n.has_method("remove_meta") or metavals[key] != null:
-			ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY, [])
-	var dbox = ui_just_make_rootbox(vbox, "NEWENTRY")
-	ui_create_row(dbox, "", "", true, [true, true], ["__NEWENTRY__"])
 
-	vbox.visible = true
-	nonodelabel.visible = false
-
-
-func delete_entry_from_ui_and_update(unused, obj):
+func delete_entry_from_ui_and_update(obj):
 	var rootbox = obj.get_parent().get_parent()
 	var parent = rootbox.get_parent()
 
@@ -105,6 +124,16 @@ func delete_entry_from_ui_and_update(unused, obj):
 	
 	parent.remove_child(rootbox)
 	
+	var textbox_keyorval
+	if rootbox.get_children()[0].get_node("./textbox_val").has_focus():
+		textbox_keyorval = rootbox.get_children()[0].get_node("./textbox_val")
+	else:
+		textbox_keyorval = rootbox.get_children()[0].get_node("./textbox_key")
+		
+	var prev_rootbox = rootbox.get_meta("prev_rootbox")
+	if prev_rootbox != vbox:
+		prev_rootbox.get_children()[0].get_node("./textbox_key").grab_focus()
+		print("nufocus="+str(prev_rootbox.get_children()[0].get_node("./textbox_key").text))
 	if update_all_from_ui(null):
 		rootbox.queue_free()
 	else:
@@ -112,20 +141,27 @@ func delete_entry_from_ui_and_update(unused, obj):
 			parent.remove_child(n)
 		for n in children:
 			parent.add_child(n)
+		textbox_keyorval.grab_focus()
 
 
 func update_all_from_ui(unused):
-	metavals = {}
-		
-	if update_from_textboxes_recursively(vbox, [[],[],[]]) == 0:
-		update_node(activenode, "save")
+
+	var prevfocus = lastfocus.duplicate(1)
+	var metavals = {}
+	
+	if update_from_textboxes_recursively(vbox, [[],[],[]], metavals) == 0:
+		var undo_redo = get_undo_redo()
+		undo_redo.create_action("Save Metavals on Node "+activenode.name)
+		undo_redo.add_do_method(self, "update_node", activenode, ["save"], metavals, lastfocus)
+		undo_redo.add_undo_method(self, "update_node", activenode, ["save", "load"], get_metavals(activenode), prevfocus)
+		undo_redo.commit_action()
 		return true
 	else:
 		print("Metadata Inspector: Unknown error while updating! (dup vals?)")
 		return false
 
 
-func update_from_textboxes_recursively(tbox, tpath):
+func update_from_textboxes_recursively(tbox, tpath, metavals):
 	var failure = 0
 
 	if tbox.is_class("Node"):
@@ -147,14 +183,16 @@ func update_from_textboxes_recursively(tbox, tpath):
 				if tpath[1][-1] == TYPE_ARRAY:
 					path[0][-1] = tpath[2][-1]
 				tpath[2][-1] += 1
+			
+			tbox.set_meta("path", path[0])
 		else:
 			path = tpath
 			
 		for n in tbox.get_children():
 			if n.has_node("./textbox_key"):
-				if not update_from_textbox(n, path[0]):
+				if not update_from_textbox(n, path[0], metavals):
 					failure += 1
-			failure += update_from_textboxes_recursively(n, path)
+			failure += update_from_textboxes_recursively(n, path, metavals)
 	return failure
 
 func save_focus(obj, tpath, isnew):
@@ -163,20 +201,20 @@ func save_focus(obj, tpath, isnew):
 	
 	if obj.get_node("./textbox_key").has_focus():
 		if isnew:
-			lastfocus_path = poppedpath
-			lastfocus_boxx = "new"
+			lastfocus[0] = poppedpath
+			lastfocus[1] = "new"
 		else:
-			lastfocus_path = tpath
-			lastfocus_boxx = "key"
+			lastfocus[0] = tpath
+			lastfocus[1] = "key"
 	elif obj.get_node("./textbox_val").has_focus():
 		if isnew:
-			lastfocus_path = poppedpath
-			lastfocus_boxx = "new"
+			lastfocus[0] = poppedpath
+			lastfocus[1] = "new"
 		else:
-			lastfocus_path = tpath
-			lastfocus_boxx = "val"
+			lastfocus[0] = tpath
+			lastfocus[1] = "val"
 
-func update_from_textbox(obj, tpath):
+func update_from_textbox(obj, tpath, metavals):
 
 	var isnew = obj.get_node("./textbox_key").get_meta("isnew")
 
@@ -193,8 +231,12 @@ func update_from_textbox(obj, tpath):
 	var save_val = oval
 	var save_key = key
 	
+	if typeof(okey) == TYPE_INT:
+		save_key = int(key)
+	
 	if not obj.get_node("./textbox_key").editable:
 		save_key = okey
+
 
 	if( (obj.get_node("./textbox_val").editable)
 	and (typeof(oval) != typ or l.custom_val2str(oval) != val)
@@ -211,7 +253,7 @@ func update_from_textbox(obj, tpath):
 	else:
 		save_val = oval
 
-	if typeof(save_key) == TYPE_STRING:
+	if typeof(save_key) in [TYPE_STRING, TYPE_INT]:
 		if typeof(oval) == TYPE_DICTIONARY:
 			save_val = {}
 		if typeof(oval) == TYPE_ARRAY:
@@ -311,37 +353,79 @@ func ui_color_indicate_textbox(txt, obj):
 	else:
 		obj.modulate = Color(1,1,1)
 
+func ui_switch_from_key_context_menu(choice, obj):
+	if choice == 0:
+		delete_entry_from_ui_and_update(obj)
+	elif choice == 1:
+		get_undo_redo().undo()
+	elif choice == 2:
+		get_undo_redo().redo()
+	elif choice == 3:
+		print("up")
+	elif choice == 4:
+		print("down")	
 
-func ui_context_menu(ev, obj, act):
+func ui_context_menu(ev, obj, from):
 	if (ev is InputEventMouseButton and ev.button_index == BUTTON_RIGHT) or (ev is InputEventKey and ev.scancode == KEY_MENU):
 		if ev.pressed:
+
 			var dbox = PopupMenu.new()
+			dbox.name = "CustomPopupMenu"
+			
 			obj.add_child(dbox)
+			dbox.set_size(Vector2(100,10))
+
 			if ev is InputEventMouseButton:
 				dbox.set_position(obj.get_global_transform().xform(obj.get_local_mouse_position()))
 			else:
 				dbox.set_position(obj.get_global_transform().origin+Vector2(10,10))
-			dbox.set_size(Vector2(100,10))
 
-			if act == "type":
+			if from == "key":
+				# Popupmenu is created on the fly so that actual shortcuts from here will never work bc they are totally bugged
+				for i in range(0,global_shortcuts.size()):
+					dbox.add_shortcut(get_shortcut(global_choices[i], global_shortcuts[i], global_mods[i]), i)
+				dbox.connect("id_pressed", self, "ui_switch_from_key_context_menu", [obj])
+			elif from == "val":
 				if not typeof(obj.get_meta("oval")) in l.supported_type_names.keys():
 					dbox.add_item(l.all_type_names[typeof(obj.get_meta("oval"))], typeof(obj.get_meta("oval")))
-
 				for i in l.supported_type_names.keys():
 					dbox.add_item(l.supported_type_names[i], i)
-					# TODO: nothing happens
 				dbox.connect("id_pressed", self, "change_saved_type", [obj])
-			elif act == "key":
-				dbox.add_item("delete", 0)
-				
-				dbox.connect("id_pressed", self, "delete_entry_from_ui_and_update", [obj])
-				
+
 			dbox.popup()
 			dbox.grab_focus()
 		else:
 			for n in obj.get_children():
 				if n.is_class("PopupMenu"):
 					n.queue_free()
+	
+	# here we implement the real shortcuts
+	if ev is InputEventKey and ev.pressed and ev.scancode in global_shortcuts:
+		var i = global_shortcuts.find(ev.scancode)
+		var failure = 0
+		if "c" in global_mods[i] and ev.control != true:
+				failure += 1
+		if "s" in global_mods[i] and ev.shift != true:
+				failure += 1
+		if "a" in global_mods[i] and ev.alt != true:
+				failure += 1
+		if failure == 0:
+			ui_switch_from_key_context_menu(i, obj)
+			
+
+func get_shortcut(label, key, mod):
+	var shortcut = ShortCut.new()
+	shortcut.resource_name = label
+	var inputeventkey = InputEventKey.new()
+	inputeventkey.set_scancode(key)
+	if "c" in mod:
+		inputeventkey.control = true
+	if "s" in mod:
+		inputeventkey.shift = true
+	if "a" in mod:
+		inputeventkey.alt = true
+	shortcut.set_shortcut(inputeventkey)
+	return shortcut
 
 
 func ui_resize_child_labels(tbox):
@@ -350,39 +434,39 @@ func ui_resize_child_labels(tbox):
 			n.set_size(tbox.get_size())
 
 
-func ui_create_rows_recursively(tval, tkey, tbox, ttype, tpath):
+func ui_create_rows_recursively(tval, tkey, tbox, ttype, tpath, tfocus):
 	var box = ui_just_make_rootbox(tbox, tkey)
 	
 	var editables = [true, true]
 	if ttype == TYPE_ARRAY:
 		editables = [false, true]
 		
-	if typeof(tkey) != TYPE_STRING:
-		ui_create_row(box, tkey, tval, false, [false, false], tpath + [tkey])
+	if not typeof(tkey) in [TYPE_STRING, TYPE_INT]:
+		ui_create_row(box, tkey, tval, false, [false, false], tpath + [tkey], tfocus)
 	else:
 		if typeof(tval) == TYPE_DICTIONARY:
-			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey])
+			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey],tfocus)
 			var dbox = ui_just_make_subboxes(box)
 			for key in tval.keys():
-				ui_create_rows_recursively(tval[key], key, dbox, typeof(tval), tpath + [tkey])
+				ui_create_rows_recursively(tval[key], key, dbox, typeof(tval), tpath + [tkey], tfocus)
 			var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
-			ui_create_row(ddbox, "", "", true, [true, true], tpath + [tkey] + ["__NEWENTRY__"])
+			ui_create_row(ddbox, "", "", true, [true, true], tpath + [tkey] + ["__NEWENTRY__"], tfocus)
 		elif typeof(tval) == TYPE_ARRAY:
-			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey])
+			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey], tfocus)
 			var dbox = ui_just_make_subboxes(box)
 			for i in range(0, tval.size()):
-				ui_create_rows_recursively(tval[i], i, dbox, typeof(tval), tpath + [tkey])
+				ui_create_rows_recursively(tval[i], i, dbox, typeof(tval), tpath + [tkey], tfocus)
 			var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
-			ui_create_row(ddbox, str(tval.size()), "", true, [false, true], tpath + [tkey] + ["__NEWENTRY__"])
+			ui_create_row(ddbox, str(tval.size()), "", true, [false, true], tpath + [tkey] + ["__NEWENTRY__"], tfocus)
 		else:
-			ui_create_row(box, tkey, tval, false, editables, tpath + [tkey])
+			ui_create_row(box, tkey, tval, false, editables, tpath + [tkey], tfocus)
 
 
-func ui_create_row(box, tkey, tval, isnew, editables, tpath):
+func ui_create_row(tbox, tkey, tval, isnew, editables, tpath, tfocus):
 
 	var dbox = HBoxContainer.new()
 	dbox.size_flags_horizontal = dbox.SIZE_EXPAND_FILL
-	box.add_child(dbox)
+	tbox.add_child(dbox)
 
 	var textbox1 = LineEdit.new()
 	textbox1.name = "textbox_key"
@@ -395,6 +479,7 @@ func ui_create_row(box, tkey, tval, isnew, editables, tpath):
 	textbox1.connect("resized", self, "ui_resize_child_labels", [textbox1])
 	textbox1.connect("gui_input", self, "ui_context_menu", [textbox1, "key"])
 	textbox1.context_menu_enabled = false
+	
 	
 	dbox.add_child(textbox1)
 
@@ -435,7 +520,7 @@ func ui_create_row(box, tkey, tval, isnew, editables, tpath):
 		textbox2.visible = false
 
 	textbox2.connect("resized", self, "ui_resize_child_labels", [textbox2])
-	textbox2.connect("gui_input", self, "ui_context_menu", [textbox2, "type"])
+	textbox2.connect("gui_input", self, "ui_context_menu", [textbox2, "val"])
 	textbox2.context_menu_enabled = false
 	dbox.add_child(textbox2)
 
@@ -456,28 +541,33 @@ func ui_create_row(box, tkey, tval, isnew, editables, tpath):
 	textbox2.connect("text_changed", self, "ui_color_indicate_textbox", [textbox2])
 	textbox2.connect("text_entered", self, "update_all_from_ui")
 	
-	if typeof(tkey) != TYPE_STRING:
+	if not typeof(tkey) in [TYPE_STRING, TYPE_INT]:
 		textbox1.editable = false
 		textbox2.editable = false
 	
 	var poppedpath = [] + tpath
 	poppedpath.pop_back()
-	if isnew and poppedpath == lastfocus_path:
+	if isnew and poppedpath == lastfocus[0]:
 		if textbox1.editable:
 			textbox1.grab_focus()
 		else:
 			textbox2.grab_focus()
 	else:
-		if tpath == lastfocus_path:
-			if lastfocus_boxx == "key":
+		if tpath == tfocus[0]:
+			if tfocus[1] == "key":
 				textbox1.grab_focus()
-			elif lastfocus_boxx == "val":
+			elif tfocus[1] == "val":
 				textbox2.grab_focus()
+	
+	#textbox1.shortcut_keys_enabled = false
+	#textbox2.shortcut_keys_enabled = false
 
 
-func ui_just_make_rootbox(tbox, name):
+func ui_just_make_rootbox(tbox, tname):
 	var box = VBoxContainer.new()
-	box.name = "RootBox-"+str(name)
+	box.name = "RootBox-"+str(tname)
+	box.set_meta("prev_rootbox", prev_rootbox)
+	prev_rootbox = box
 	box.size_flags_horizontal = box.SIZE_EXPAND_FILL
 	tbox.add_child(box)
 	return box
@@ -495,12 +585,7 @@ func ui_just_make_subboxes(tbox):
 	dbox.add_child(ddbox2)
 
 	return ddbox2
-
-
-func set_node_not_editable():
-	vbox.visible = false
-	nonodelabel.visible = true
-
+	
 
 func _exit_tree():
 	destroy_old()
