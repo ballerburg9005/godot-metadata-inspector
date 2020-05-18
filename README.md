@@ -17,10 +17,7 @@ INSTALL
 TODO
 ----
 - right click key -> move entry up/down
-- doesn't trigger a "really quit changes will be lost" 
-- undo / redo
 - maxentry limit = 60?
-- keyboard-only redy shortcuts
 
 - update metadata at runtime (while game is running)
 

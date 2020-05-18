@@ -122,18 +122,24 @@ func delete_entry_from_ui_and_update(obj):
 	for n in parent.get_children():
 		children.push_back(n)
 	
-	parent.remove_child(rootbox)
-	
 	var textbox_keyorval
 	if rootbox.get_children()[0].get_node("./textbox_val").has_focus():
 		textbox_keyorval = rootbox.get_children()[0].get_node("./textbox_val")
 	else:
 		textbox_keyorval = rootbox.get_children()[0].get_node("./textbox_key")
-		
-	var prev_rootbox = rootbox.get_meta("prev_rootbox")
-	if prev_rootbox != vbox:
-		prev_rootbox.get_children()[0].get_node("./textbox_key").grab_focus()
-		print("nufocus="+str(prev_rootbox.get_children()[0].get_node("./textbox_key").text))
+
+	if not rootbox.get_children()[0].get_node("./textbox_key").get_meta("isnew"):
+		var prev_rootbox = rootbox.get_meta("prev_rootbox")
+		if prev_rootbox != vbox:
+			prev_rootbox.get_children()[0].get_node("./textbox_key").grab_focus()
+	else:
+		var poppedpath = rootbox.get_children()[0].get_node("./textbox_key").get_meta("path")
+		poppedpath.pop_back()
+		lastfocus[0] = poppedpath
+		lastfocus[1] = "new"
+
+	parent.remove_child(rootbox)
+	
 	if update_all_from_ui(null):
 		rootbox.queue_free()
 	else:
@@ -146,14 +152,15 @@ func delete_entry_from_ui_and_update(obj):
 
 func update_all_from_ui(unused):
 
-	var prevfocus = lastfocus.duplicate(1)
+	var prevfocus = lastfocus.duplicate(true)
+
 	var metavals = {}
 	
 	if update_from_textboxes_recursively(vbox, [[],[],[]], metavals) == 0:
 		var undo_redo = get_undo_redo()
 		undo_redo.create_action("Save Metavals on Node "+activenode.name)
-		undo_redo.add_do_method(self, "update_node", activenode, ["save"], metavals, lastfocus)
-		undo_redo.add_undo_method(self, "update_node", activenode, ["save", "load"], get_metavals(activenode), prevfocus)
+		undo_redo.add_do_method(self, "update_node", activenode, ["save"], metavals, lastfocus.duplicate(true))
+		undo_redo.add_undo_method(self, "update_node", activenode, ["save"], get_metavals(activenode), prevfocus)
 		undo_redo.commit_action()
 		return true
 	else:
@@ -218,6 +225,8 @@ func update_from_textbox(obj, tpath, metavals):
 
 	var isnew = obj.get_node("./textbox_key").get_meta("isnew")
 
+	save_focus(obj, tpath, isnew)
+	
 	var okey = obj.get_node("./textbox_key").get_meta("oval")
 	var oval = obj.get_node("./textbox_val").get_meta("oval")
 
@@ -266,8 +275,6 @@ func update_from_textbox(obj, tpath, metavals):
 		): 
 		return true
 
-	save_focus(obj, tpath, isnew)
-	
 	return store_in_meta_dict_recursively(metavals, [] + tpath, save_key, save_val)
 	
 	
@@ -476,6 +483,7 @@ func ui_create_row(tbox, tkey, tval, isnew, editables, tpath, tfocus):
 	textbox1.set_cursor_position(1337)
 	textbox1.set_meta("oval", tkey)
 	textbox1.set_meta("isnew", isnew)
+	textbox1.set_meta("path", tpath)
 	textbox1.connect("resized", self, "ui_resize_child_labels", [textbox1])
 	textbox1.connect("gui_input", self, "ui_context_menu", [textbox1, "key"])
 	textbox1.context_menu_enabled = false
@@ -547,7 +555,7 @@ func ui_create_row(tbox, tkey, tval, isnew, editables, tpath, tfocus):
 	
 	var poppedpath = [] + tpath
 	poppedpath.pop_back()
-	if isnew and poppedpath == lastfocus[0]:
+	if isnew and poppedpath == tfocus[0] and tfocus[1] == "new":
 		if textbox1.editable:
 			textbox1.grab_focus()
 		else:
