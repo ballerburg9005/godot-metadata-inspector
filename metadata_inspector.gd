@@ -27,7 +27,9 @@ var global_mods      = ["c", "c", "cs", "c", "c"]
 
 var prev_rootbox
 
+
 func _enter_tree():
+
 	while(destroy_old()):
 		destroy_old()
 
@@ -63,6 +65,7 @@ func _enter_tree():
 
 	is_metadata_inspector = true
 
+
 func get_metavals(n):
 	var metavals = {}
 	for key in n.get_meta_list():
@@ -76,9 +79,11 @@ func update_node(n, act, save_metavals, focus):
 	#print("Updating: "+n.name)
 	#n.set_meta("mustbestring", {1.0: Label.new(), 55 : Quat(1,1,1,1), false: "myval3"})
 	#n.set_meta("nestedshit", ["array1", "array2", "array3", {"thisisdictkey1": "thisisdictval1", "thisisdictkey2": "thisisdictval2", "shit": [1,2,3,4,5]}])
+	
 
-	for oldentries in vbox.get_children():
-		oldentries.call_deferred('free')
+	for oldentry in vbox.get_children():
+		vbox.remove_child(oldentry)
+		oldentry.queue_free()
 
 
 	if is_instance_valid(n) and not n.is_queued_for_deletion():
@@ -112,8 +117,7 @@ func update_node(n, act, save_metavals, focus):
 	else:
 		vbox.visible = false
 		nonodelabel.visible = true
-
-
+	
 func delete_entry_from_ui_and_update(obj):
 	var rootbox = obj.get_parent().get_parent()
 	var parent = rootbox.get_parent()
@@ -155,13 +159,14 @@ func update_all_from_ui(unused):
 	var prevfocus = lastfocus.duplicate(true)
 
 	var metavals = {}
-	
+
 	if update_from_textboxes_recursively(vbox, [[],[],[]], metavals) == 0:
 		var undo_redo = get_undo_redo()
 		undo_redo.create_action("Save Metavals on Node "+activenode.name)
 		undo_redo.add_do_method(self, "update_node", activenode, ["save"], metavals, lastfocus.duplicate(true))
 		undo_redo.add_undo_method(self, "update_node", activenode, ["save"], get_metavals(activenode), prevfocus)
 		undo_redo.commit_action()
+
 		return true
 	else:
 		print("Metadata Inspector: Unknown error while updating! (dup vals?)")
@@ -246,7 +251,6 @@ func update_from_textbox(obj, tpath, metavals):
 	if not obj.get_node("./textbox_key").editable:
 		save_key = okey
 
-
 	if( (obj.get_node("./textbox_val").editable)
 	and (typeof(oval) != typ or l.custom_val2str(oval) != val)
 	):
@@ -276,17 +280,6 @@ func update_from_textbox(obj, tpath, metavals):
 		return true
 
 	return store_in_meta_dict_recursively(metavals, [] + tpath, save_key, save_val)
-	
-	
-#	recurse(obj.get_parent().get_parent(), "")
-#func recurse(obj, level):
-#	if obj.name == "textbox_key":
-#		print(level+obj.name+" : "+obj.text)
-#	else:
-#		print(level+obj.name)
-#		
-#	for n in obj.get_children():
-#		recurse(n, level+"   ")
 
 
 func store_in_meta_dict_recursively(tn, tpath, tkey, tval):
@@ -579,8 +572,8 @@ func ui_just_make_rootbox(tbox, tname):
 	box.size_flags_horizontal = box.SIZE_EXPAND_FILL
 	tbox.add_child(box)
 	return box
-	
-	
+
+
 func ui_just_make_subboxes(tbox):
 	var dbox = HBoxContainer.new()
 	dbox.size_flags_horizontal = dbox.SIZE_EXPAND_FILL
@@ -593,7 +586,7 @@ func ui_just_make_subboxes(tbox):
 	dbox.add_child(ddbox2)
 
 	return ddbox2
-	
+
 
 func _exit_tree():
 	destroy_old()
@@ -615,10 +608,6 @@ func get_plugin_name():
 #	fpscounter = (fpscounter + 1)%999999999
 #	if fpscounter%30 == 0:
 #		print(fpscounter)
-
-
-
-
 
 
 
