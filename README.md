@@ -16,7 +16,6 @@ INSTALL
 
 TODO
 ----
-- right click key -> move entry up/down
 - update metadata at runtime (while game is running)
 
 BUGS
