@@ -21,11 +21,11 @@ var l = TypeFormattingLogic.new()
 var fpscounter = 0
 
 
-var global_choices   = ["delete", "undo", "redo", "move↑", "move↓", "◰path"]
+var global_choices   = ["delete", "undo", "redo", "move↑", "move↓", "path?"]
 var global_shortcuts = [KEY_DELETE, KEY_Z, KEY_Z, KEY_UP, KEY_DOWN, KEY_C]
 var global_mods      = ["c", "c", "cs", "c", "c", "cs"]
 
-var prev_rootbox
+var prev_focus_rootbox
 
 
 func _enter_tree():
@@ -77,6 +77,7 @@ func get_metavals(n):
 
 
 func update_node(n, act, save_metavals, focus):
+	#print(n.name+" : "+str(act)+" : "+str(save_metavals)+" : "+str(focus))
 	#print("Updating: "+n.name)
 	#n.set_meta("mustbestring", {1.0: Label.new(), 55 : Quat(1,1,1,1), false: "myval3"})
 	#n.set_meta("nestedshit", ["array1", "array2", "array3", {"thisisdictkey1": "thisisdictval1", "thisisdictkey2": "thisisdictval2", "shit": [1,2,3,4,5]}])
@@ -97,15 +98,17 @@ func update_node(n, act, save_metavals, focus):
 			for key in save_metavals:
 				n.set_meta(key, save_metavals[key])
 
-		prev_rootbox = vbox
+		prev_focus_rootbox = vbox
 		
 		var metavals = get_metavals(n)
 		var counted_entries = count_entries(metavals, 0) - 1
 		if  counted_entries < MAX_ENTRIES:
+			var prevbox = null
 			for key in metavals:
 				if n.has_method("remove_meta") or metavals[key] != null:
-					ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY, [], focus)
+					prevbox = ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY, [], focus, prevbox)
 			var dbox = ui_just_make_rootbox(vbox, "NEWENTRY")
+			
 			ui_create_row(dbox, "", "", true, [true, true], ["*+***__**+**NEWENTRY**+**__***+*"], focus)
 			
 			vbox.visible = true
@@ -169,9 +172,9 @@ func delete_entry_from_ui_and_update(obj):
 		textbox_keyorval = rootbox.get_children()[0].get_node("./textbox_key")
 
 	if not rootbox.get_children()[0].get_node("./textbox_key").get_meta("isnew"):
-		var prev_rootbox = rootbox.get_meta("prev_rootbox")
-		if prev_rootbox != vbox:
-			prev_rootbox.get_children()[0].get_node("./textbox_key").grab_focus()
+		var prev_focus_rootbox = rootbox.get_meta("prev_focus_rootbox")
+		if prev_focus_rootbox != vbox:
+			prev_focus_rootbox.get_children()[0].get_node("./textbox_key").grab_focus()
 	else:
 		var poppedpath = rootbox.get_children()[0].get_node("./textbox_key").get_meta("path")
 		poppedpath.pop_back()
@@ -188,6 +191,45 @@ func delete_entry_from_ui_and_update(obj):
 		for n in children:
 			parent.add_child(n)
 		textbox_keyorval.grab_focus()
+
+func move_entry_inside_ui_and_update(obj, direction):
+	var rootbox = obj.get_parent().get_parent()
+	var prevbox = rootbox.get_meta("prevbox") if rootbox.has_meta("prevbox") else null
+	var nextbox = rootbox.get_meta("nextbox") if rootbox.has_meta("nextbox") else null
+
+	if (prevbox == null and direction == "up") or (nextbox == null and direction == "down"):
+		return false
+
+	var newbox = prevbox if direction == "up" else nextbox
+
+	var keyorval
+	if rootbox.get_children()[0].get_node("./textbox_val").has_focus():
+		 keyorval = "val"
+	else:
+		keyorval = "key"
+
+	# swaps children rootbox <-> newbox
+	var nextchildren = []
+	for n in newbox.get_children():
+		nextchildren.push_back(n)
+		newbox.remove_child(n)
+	for n in rootbox.get_children():
+		rootbox.remove_child(n)
+		newbox.add_child(n)
+	for n in nextchildren:
+			rootbox.add_child(n)
+
+	# this causes excessive reloads from CustomInspectorPlugin which makes it lose focus
+	# not necessary, but for completions sake
+	#var rootboxname = rootbox.name
+	#var newboxname = newbox.name
+	#newbox.name = "~~~~~~~~~~~~~~~~~~~shoa"
+	#rootbox.name = newboxname
+	#newbox.name = rootboxname
+
+	newbox.get_children()[0].get_node("./textbox_"+keyorval).grab_focus()
+
+	update_all_from_ui(null)
 
 
 func update_all_from_ui(unused):
@@ -397,9 +439,9 @@ func ui_switch_from_key_context_menu(choice, obj):
 	elif choice == 2:
 		get_undo_redo().redo()
 	elif choice == 3:
-		print("up")
+		move_entry_inside_ui_and_update(obj, "up")
 	elif choice == 4:
-		print("down")
+		move_entry_inside_ui_and_update(obj, "down")
 	elif choice == 5:
 		ui_copy_path_to_clipboard(obj)
 
@@ -473,8 +515,11 @@ func ui_resize_child_labels(tbox):
 			n.set_size(tbox.get_size())
 
 
-func ui_create_rows_recursively(tval, tkey, tbox, ttype, tpath, tfocus):
+func ui_create_rows_recursively(tval, tkey, tbox, ttype, tpath, tfocus, tprevbox):
 	var box = ui_just_make_rootbox(tbox, tkey)
+	if tprevbox != null:
+		box.set_meta("prevbox", tprevbox)
+		tprevbox.set_meta("nextbox", box)
 	
 	var editables = [true, true]
 	if ttype == TYPE_ARRAY:
@@ -486,19 +531,23 @@ func ui_create_rows_recursively(tval, tkey, tbox, ttype, tpath, tfocus):
 		if typeof(tval) == TYPE_DICTIONARY:
 			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey],tfocus)
 			var dbox = ui_just_make_subboxes(box)
+			var dprevbox = null
 			for key in tval.keys():
-				ui_create_rows_recursively(tval[key], key, dbox, typeof(tval), tpath + [tkey], tfocus)
+				dprevbox = ui_create_rows_recursively(tval[key], key, dbox, typeof(tval), tpath + [tkey], tfocus, dprevbox)
 			var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
 			ui_create_row(ddbox, "", "", true, [true, true], tpath + [tkey] + ["*+***__**+**NEWENTRY**+**__***+*"], tfocus)
 		elif typeof(tval) == TYPE_ARRAY:
 			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey], tfocus)
 			var dbox = ui_just_make_subboxes(box)
+			var dprevbox = null
 			for i in range(0, tval.size()):
-				ui_create_rows_recursively(tval[i], i, dbox, typeof(tval), tpath + [tkey], tfocus)
+				dprevbox = ui_create_rows_recursively(tval[i], i, dbox, typeof(tval), tpath + [tkey], tfocus, dprevbox)
 			var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
 			ui_create_row(ddbox, str(tval.size()), "", true, [false, true], tpath + [tkey] + ["*+***__**+**NEWENTRY**+**__***+*"], tfocus)
 		else:
 			ui_create_row(box, tkey, tval, false, editables, tpath + [tkey], tfocus)
+	
+	return box
 
 
 func ui_create_row(tbox, tkey, tval, isnew, editables, tpath, tfocus):
@@ -606,8 +655,12 @@ func ui_create_row(tbox, tkey, tval, isnew, editables, tpath, tfocus):
 func ui_just_make_rootbox(tbox, tname):
 	var box = VBoxContainer.new()
 	box.name = "RootBox-"+str(tname)
-	box.set_meta("prev_rootbox", prev_rootbox)
-	prev_rootbox = box
+	
+	# this is only used for grabbing a new box to focus if the active one was deleted
+	box.set_meta("prev_focus_rootbox", prev_focus_rootbox)
+	#prev_focus_rootbox.set_meta("next_focus_rootbox", box)
+	
+	prev_focus_rootbox = box
 	box.size_flags_horizontal = box.SIZE_EXPAND_FILL
 	tbox.add_child(box)
 	return box

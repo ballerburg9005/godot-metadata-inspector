@@ -20,7 +20,7 @@ func get_typehint(tval):
 	for x in range(0,typename.length()):
 		sum += typename.ord_at(x)-100
 		
-	var color = Color(0,0,0,0.25)
+	var color = Color(0,0,0,0.33)
 	color.r = 0.25 + 0.015*((sum*11)%50)
 	color.g = 0.25 + 0.015*((sum*17)%50)
 	color.b = 0.25 + 0.015*((sum*3)%50)
