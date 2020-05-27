@@ -17,8 +17,6 @@ INSTALL
 TODO
 ----
 - right click key -> move entry up/down
-- maxentry limit = 60?
-
 - update metadata at runtime (while game is running)
 
 BUGS

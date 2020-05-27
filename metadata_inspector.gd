@@ -1,7 +1,7 @@
 tool
 extends EditorPlugin
 
-var IwantConfirmDialogues = true
+var MAX_ENTRIES = 120
 
 var metapanel
 var nonodelabel
@@ -21,9 +21,9 @@ var l = TypeFormattingLogic.new()
 var fpscounter = 0
 
 
-var global_choices   = ["delete", "undo", "redo", "move↑", "move↓"]
-var global_shortcuts = [KEY_DELETE, KEY_Z, KEY_Z, KEY_UP, KEY_DOWN]
-var global_mods      = ["c", "c", "cs", "c", "c"]
+var global_choices   = ["delete", "undo", "redo", "move↑", "move↓", "◰path"]
+var global_shortcuts = [KEY_DELETE, KEY_Z, KEY_Z, KEY_UP, KEY_DOWN, KEY_C]
+var global_mods      = ["c", "c", "cs", "c", "c", "cs"]
 
 var prev_rootbox
 
@@ -75,16 +75,15 @@ func get_metavals(n):
 			print("Metadata Inspector: Weird meta index, not string, ignoring: "+str(key))
 	return metavals
 
+
 func update_node(n, act, save_metavals, focus):
 	#print("Updating: "+n.name)
 	#n.set_meta("mustbestring", {1.0: Label.new(), 55 : Quat(1,1,1,1), false: "myval3"})
 	#n.set_meta("nestedshit", ["array1", "array2", "array3", {"thisisdictkey1": "thisisdictval1", "thisisdictkey2": "thisisdictval2", "shit": [1,2,3,4,5]}])
 	
-
 	for oldentry in vbox.get_children():
 		vbox.remove_child(oldentry)
 		oldentry.queue_free()
-
 
 	if is_instance_valid(n) and not n.is_queued_for_deletion():
 		if "save" in act:
@@ -97,27 +96,64 @@ func update_node(n, act, save_metavals, focus):
 						n.set_meta(key, null)
 			for key in save_metavals:
 				n.set_meta(key, save_metavals[key])
-		
+
 		prev_rootbox = vbox
+		
 		var metavals = get_metavals(n)
-		for key in metavals:
-			if n.has_method("remove_meta") or metavals[key] != null:
-				ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY, [], focus)
-		var dbox = ui_just_make_rootbox(vbox, "NEWENTRY")
-		ui_create_row(dbox, "", "", true, [true, true], ["__NEWENTRY__"], focus)
-		
-		vbox.visible = true
-		nonodelabel.visible = false
-		
-		var oldactivenode = activenode
-		activenode = n
-		if oldactivenode != null and oldactivenode != activenode:
-			get_editor_interface().get_selection().clear()
-			get_editor_interface().get_selection().add_node(activenode)
+		var counted_entries = count_entries(metavals, 0) - 1
+		if  counted_entries < MAX_ENTRIES:
+			for key in metavals:
+				if n.has_method("remove_meta") or metavals[key] != null:
+					ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY, [], focus)
+			var dbox = ui_just_make_rootbox(vbox, "NEWENTRY")
+			ui_create_row(dbox, "", "", true, [true, true], ["*+***__**+**NEWENTRY**+**__***+*"], focus)
+			
+			vbox.visible = true
+			nonodelabel.visible = false
+			
+			var oldactivenode = activenode
+			activenode = n
+			if oldactivenode != null and oldactivenode != activenode:
+				get_editor_interface().get_selection().clear()
+				get_editor_interface().get_selection().add_node(activenode)
+		else:
+			set_nonodelabel("This node has "+str(counted_entries)+" entry rows and thereby exceeds the limit of "+str(MAX_ENTRIES)+". If you wish to view its metadata, please change the MAX_ENTRIES limit in the plugin code.")
 	else:
+		set_nonodelabel("Select a single node to edit and view its metadata.")
+
+
+func set_nonodelabel(txt):
+		nonodelabel.text = txt
 		vbox.visible = false
 		nonodelabel.visible = true
+
+
+func ui_copy_path_to_clipboard(obj):
+	var ppa = Array(str(activenode.get_path()).split("@@")[-1].split("/"))
+	ppa.pop_front()
+	var pps = "/root"
+	for val in ppa:
+		pps += "/"+val
+
+	var path = obj.get_parent().get_node("./textbox_key").get_meta("path")
+	var result = "get_node(\""+pps+"\").get_meta(\""+str(path[0])+"\")"
+
+	path.pop_front()
+	for key in path:
+		var fkey = "**UNSUPPORTED TYPE**"
+		if typeof(key) == TYPE_INT:
+			fkey = str(key)
+		elif typeof(key) == TYPE_STRING:
+			fkey = '"'+key+'"'
+		result += "["+fkey+"]"
+		
+		if str(key) == "*+***__**+**NEWENTRY**+**__***+*":
+			result = ""
 	
+	print(result)
+	OS.set_clipboard(result)
+
+
 func delete_entry_from_ui_and_update(obj):
 	var rootbox = obj.get_parent().get_parent()
 	var parent = rootbox.get_parent()
@@ -363,7 +399,10 @@ func ui_switch_from_key_context_menu(choice, obj):
 	elif choice == 3:
 		print("up")
 	elif choice == 4:
-		print("down")	
+		print("down")
+	elif choice == 5:
+		ui_copy_path_to_clipboard(obj)
+
 
 func ui_context_menu(ev, obj, from):
 	if (ev is InputEventMouseButton and ev.button_index == BUTTON_RIGHT) or (ev is InputEventKey and ev.scancode == KEY_MENU):
@@ -450,14 +489,14 @@ func ui_create_rows_recursively(tval, tkey, tbox, ttype, tpath, tfocus):
 			for key in tval.keys():
 				ui_create_rows_recursively(tval[key], key, dbox, typeof(tval), tpath + [tkey], tfocus)
 			var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
-			ui_create_row(ddbox, "", "", true, [true, true], tpath + [tkey] + ["__NEWENTRY__"], tfocus)
+			ui_create_row(ddbox, "", "", true, [true, true], tpath + [tkey] + ["*+***__**+**NEWENTRY**+**__***+*"], tfocus)
 		elif typeof(tval) == TYPE_ARRAY:
 			ui_create_row(box, tkey, tval, false, [editables[0], false], tpath + [tkey], tfocus)
 			var dbox = ui_just_make_subboxes(box)
 			for i in range(0, tval.size()):
 				ui_create_rows_recursively(tval[i], i, dbox, typeof(tval), tpath + [tkey], tfocus)
 			var ddbox = ui_just_make_rootbox(dbox, "NEWENTRY")
-			ui_create_row(ddbox, str(tval.size()), "", true, [false, true], tpath + [tkey] + ["__NEWENTRY__"], tfocus)
+			ui_create_row(ddbox, str(tval.size()), "", true, [false, true], tpath + [tkey] + ["*+***__**+**NEWENTRY**+**__***+*"], tfocus)
 		else:
 			ui_create_row(box, tkey, tval, false, editables, tpath + [tkey], tfocus)
 
@@ -602,6 +641,18 @@ func destroy_old():
 
 func get_plugin_name():
 	return "Metadata Inspector"
+
+
+func count_entries(v, c):
+	if typeof(v) in [TYPE_DICTIONARY]:
+		for i in v.keys():
+			c += count_entries(v[i], 0)
+	if typeof(v) in [TYPE_ARRAY]:
+		for i in range(0, v.size()):
+			c += count_entries(v[i], 0)
+	c += 1
+	return c
+
 
 
 #func _process(delta):
