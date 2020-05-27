@@ -26,7 +26,7 @@ var global_shortcuts = [KEY_DELETE, KEY_Z, KEY_Z, KEY_UP, KEY_DOWN, KEY_C]
 var global_mods      = ["c", "c", "cs", "c", "c", "cs"]
 
 var prev_focus_rootbox
-
+var last_focus_rootbox 
 
 func _enter_tree():
 
@@ -107,9 +107,9 @@ func update_node(n, act, save_metavals, focus):
 			for key in metavals:
 				if n.has_method("remove_meta") or metavals[key] != null:
 					prevbox = ui_create_rows_recursively(metavals[key], key, vbox, TYPE_DICTIONARY, [], focus, prevbox)
-			var dbox = ui_just_make_rootbox(vbox, "NEWENTRY")
+			last_focus_rootbox = ui_just_make_rootbox(vbox, "NEWENTRY")
 			
-			ui_create_row(dbox, "", "", true, [true, true], ["*+***__**+**NEWENTRY**+**__***+*"], focus)
+			ui_create_row(last_focus_rootbox, "", "", true, [true, true], ["*+***__**+**NEWENTRY**+**__***+*"], focus)
 			
 			vbox.visible = true
 			nonodelabel.visible = false
@@ -138,23 +138,25 @@ func ui_copy_path_to_clipboard(obj):
 	for val in ppa:
 		pps += "/"+val
 
-	var path = obj.get_parent().get_node("./textbox_key").get_meta("path")
+	var path = obj.get_parent().get_node("./textbox_key").get_meta("path").duplicate()
 	var result = "get_node(\""+pps+"\").get_meta(\""+str(path[0])+"\")"
 
-	path.pop_front()
-	for key in path:
-		var fkey = "**UNSUPPORTED TYPE**"
-		if typeof(key) == TYPE_INT:
-			fkey = str(key)
-		elif typeof(key) == TYPE_STRING:
-			fkey = '"'+key+'"'
-		result += "["+fkey+"]"
-		
-		if str(key) == "*+***__**+**NEWENTRY**+**__***+*":
-			result = ""
+	if str(path[-1]) == "*+***__**+**NEWENTRY**+**__***+*":
+		result = ""
+	else:
+		path.pop_front()
+		for key in path:
+			var fkey = "**UNSUPPORTED TYPE**"
+			if typeof(key) == TYPE_INT:
+				fkey = str(key)
+			elif typeof(key) == TYPE_STRING:
+				fkey = '"'+key+'"'
+			result += "["+fkey+"]"
+			
+		print(result)
+		OS.set_clipboard(result)
 	
-	print(result)
-	OS.set_clipboard(result)
+
 
 
 func delete_entry_from_ui_and_update(obj):
@@ -173,7 +175,9 @@ func delete_entry_from_ui_and_update(obj):
 
 	if not rootbox.get_children()[0].get_node("./textbox_key").get_meta("isnew"):
 		var prev_focus_rootbox = rootbox.get_meta("prev_focus_rootbox")
-		if prev_focus_rootbox != vbox:
+		if prev_focus_rootbox == vbox:
+			last_focus_rootbox.get_children()[0].get_node("./textbox_key").grab_focus()
+		else:
 			prev_focus_rootbox.get_children()[0].get_node("./textbox_key").grab_focus()
 	else:
 		var poppedpath = rootbox.get_children()[0].get_node("./textbox_key").get_meta("path")
