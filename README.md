@@ -1,24 +1,27 @@
-# godot-plugin-refresher
+Metadata-Inspector
+==================
 
-This plugin simplifies plugin development for those wanting to make tools for the Godot Editor.
+This Godot 3.2 / 3.1 Plugin allows you to view and edit hidden Metadata.
 
-It adds a dropdown and refresh button to the toolbar. *Other* plugins' directory names will show up in the dropdown, and clicking the refresh button will simply toggle the plugin off and then back on.
+You can use this most effectively to add custom variables to any node you want without using or attaching any scripts.
 
-This makes it much easier to iterate on a single plugin since rather than having to...
 
-1. Click Project Settings.
-2. Go to Plugins tab (first time).
-3. Find the desired plugin.
-4. Click the dropdown.
-5. Select the opposite option.
-6. Click the dropdown again.
-7. Click the original option.
-8. Close the Project Settings.
+[![demo1](/demo1.jpg)](#)
 
-You instead just...
+INSTALL
+-------
 
-1. Click the dropdown (first time).
-2. Select your WIP plugin (first time).
-3. Click the refresh button.
+1. Put metadata-inspector folder into [urproject]/addons/
+2. Go Project -> Project Settings -> Plugins and activate Metadata Inspector
 
-Please consider starring the repo if you like the project and let me know if you have any feedback for bugs / feature improvements in the Issues. If you'd like to support my work, please [send tips to my Kofi](https://ko-fi.com/willnationsdev). Cheers!
+TODO
+----
+- update metadata at runtime (while game is running)
+
+BUGS
+----
+- vbox suddenly disappeared for seriously no reason and totally impossible by code 2020-05-15
+
+LICENSE
+-------
+MIT
