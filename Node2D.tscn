@@ -1,0 +1,317 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://untitled.tmx" type="PackedScene" id=1]
+[ext_resource path="res://Node2D.gd" type="Script" id=2]
+
+[sub_resource type="BitmapFont" id=1]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource( 2 )
+__meta__ = {
+"": Color( 0.4, 0.4, 0.4, 0.1 ),
+"1": "2",
+"2": "1",
+"234234": 1111.0,
+"NEWWW": "NEWWEWW",
+"ich": ""
+}
+v = {
+"one": Color( 0.87451, 0.87451, 0.87451, 1 ),
+"xxx": {
+[ null, null, null ]: "wrong"
+}
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+margin_left = 35.8238
+margin_top = 8.24398
+margin_right = 75.8238
+margin_bottom = 48.244
+__meta__ = {
+"_edit_use_anchors_": false,
+"nestedshit": [ {
+"cvx": "",
+"dxv": "",
+"shit": [ 1 ],
+"vx": "",
+"xc": "",
+"xcv": ""
+} ]
+}
+
+[node name="PopupMenu" type="PopupMenu" parent="."]
+margin_left = 405.948
+margin_top = 172.79
+margin_right = 657.948
+margin_bottom = 311.79
+__meta__ = {
+"_edit_use_anchors_": false,
+"mustbestring": {
+false: "myval3",
+55: Quat( 1, 1, 1, 1 ),
+1.0: Object(Label,"_import_path":NodePath(""),"pause_mode":0,"process_priority":0,"visible":true,"modulate":Color( 1, 1, 1, 1 ),"self_modulate":Color( 1, 1, 1, 1 ),"show_behind_parent":false,"light_mask":1,"material":null,"use_parent_material":false,"anchor_left":0.0,"anchor_top":0.0,"anchor_right":0.0,"anchor_bottom":0.0,"margin_left":0.0,"margin_top":0.0,"margin_right":0.0,"margin_bottom":0.0,"grow_horizontal":1,"grow_vertical":1,"rect_min_size":Vector2( 0, 0 ),"rect_rotation":0.0,"rect_scale":Vector2( 1, 1 ),"rect_pivot_offset":Vector2( 0, 0 ),"rect_clip_content":false,"hint_tooltip":"","focus_neighbour_left":NodePath(""),"focus_neighbour_top":NodePath(""),"focus_neighbour_right":NodePath(""),"focus_neighbour_bottom":NodePath(""),"focus_next":NodePath(""),"focus_previous":NodePath(""),"focus_mode":0,"mouse_filter":2,"mouse_default_cursor_shape":0,"size_flags_horizontal":1,"size_flags_vertical":4,"size_flags_stretch_ratio":1.0,"theme":null,"text":"","align":0,"valign":0,"autowrap":false,"clip_text":false,"uppercase":false,"percent_visible":1.0,"lines_skipped":0,"max_lines_visible":-1,"script":null)
+
+}
+}
+
+[node name="Label" type="Label" parent="PopupMenu"]
+modulate = Color( 0.494118, 0.282353, 0.282353, 0.419608 )
+margin_left = 378.814
+margin_top = 583.644
+margin_right = 406.814
+margin_bottom = 597.644
+size_flags_horizontal = 3
+size_flags_vertical = 6
+size_flags_stretch_ratio = 1.74
+text = "float"
+align = 2
+__meta__ = {
+"f": "",
+"sdf": "",
+"sdff": "",
+"sdfsdfsd": "",
+"sdfsdfsdffsd": ""
+}
+
+[node name="Label2" type="Label" parent="PopupMenu"]
+margin_right = 40.0
+margin_bottom = 14.0
+text = "hvbjhfhgfh"
+__meta__ = {
+"mustbestring": {
+55: Quat( 1, 1, 1, 1 ),
+"False": "jsfskd",
+"kjhkjjhkh": [ "kljlkjkl" ]
+}
+}
+
+[node name="untitled" parent="." instance=ExtResource( 1 )]
+position = Vector2( 250.416, 329.087 )
+
+[node name="ScrollContainer" type="ScrollContainer" parent="untitled"]
+margin_top = 0.902496
+margin_right = 175.0
+margin_bottom = 269.902
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="untitled/ScrollContainer"]
+margin_right = 168.0
+margin_bottom = 61.0
+__meta__ = {
+"": "fsdfs",
+"sdlfkhs": "dsfskj"
+}
+
+[node name="Label" type="Label" parent="untitled/ScrollContainer/VBoxContainer"]
+margin_right = 168.0
+margin_bottom = 14.0
+text = "here"
+__meta__ = {
+"": "",
+"_edit_use_anchors_": true,
+"nestedshit": [ "array1", "arraysdfsfgsd2", {
+"shit": [ 1 ],
+"thisisdictkey1sfdgsf": "thisisdictval1",
+"thisisdictkey2": "thisisdictval2"
+}, "array335sjdfsd34sdfsd" ],
+"v": {
+"dsfgsdh": Color( 0, 0, 0, 1 ),
+"mykey1": "myval1",
+"mykey2": "myval2",
+"mykey3": "myval3"
+}
+}
+
+[node name="Label2" type="Label" parent="untitled/ScrollContainer/VBoxContainer"]
+margin_top = 18.0
+margin_right = 168.0
+margin_bottom = 32.0
+text = "asdghfskfhsafjkdfjshadfkjsf"
+__meta__ = {
+"sdf": ""
+}
+
+[node name="AcceptDialog" type="AcceptDialog" parent="untitled/ScrollContainer/VBoxContainer/Label2"]
+visible = true
+anchor_right = 1.1369
+anchor_bottom = 16.8571
+margin_left = -201.0
+margin_right = 83.0
+margin_bottom = 220.0
+__meta__ = {
+"_edit_use_anchors_": false,
+"dfg": "",
+"dfgd": "",
+"dg": "",
+"gd": ""
+}
+
+[node name="Label6dfd" type="Label" parent="untitled/ScrollContainer/VBoxContainer"]
+margin_top = 36.0
+margin_right = 168.0
+margin_bottom = 50.0
+text = "hello"
+__meta__ = {
+"weirddata": {
+"Label": Object(Label,"_import_path":NodePath(""),"pause_mode":0,"process_priority":0,"visible":true,"modulate":Color( 1, 1, 1, 1 ),"self_modulate":Color( 1, 1, 1, 1 ),"show_behind_parent":false,"light_mask":1,"material":null,"use_parent_material":false,"anchor_left":0.0,"anchor_top":0.0,"anchor_right":0.0,"anchor_bottom":0.0,"margin_left":0.0,"margin_top":0.0,"margin_right":0.0,"margin_bottom":0.0,"grow_horizontal":1,"grow_vertical":1,"rect_min_size":Vector2( 0, 0 ),"rect_rotation":0.0,"rect_scale":Vector2( 1, 1 ),"rect_pivot_offset":Vector2( 0, 0 ),"rect_clip_content":false,"hint_tooltip":"","focus_neighbour_left":NodePath(""),"focus_neighbour_top":NodePath(""),"focus_neighbour_right":NodePath(""),"focus_neighbour_bottom":NodePath(""),"focus_next":NodePath(""),"focus_previous":NodePath(""),"focus_mode":0,"mouse_filter":2,"mouse_default_cursor_shape":0,"size_flags_horizontal":1,"size_flags_vertical":4,"size_flags_stretch_ratio":1.0,"theme":null,"text":"","align":0,"valign":0,"autowrap":false,"clip_text":false,"uppercase":false,"percent_visible":1.0,"lines_skipped":0,"max_lines_visible":-1,"script":null)
+
+}
+}
+
+[node name="Button" type="Button" parent="untitled/ScrollContainer/VBoxContainer"]
+margin_top = 54.0
+margin_right = 168.0
+margin_bottom = 61.0
+size_flags_stretch_ratio = 0.0
+custom_fonts/font = SubResource( 1 )
+text = "hello"
+__meta__ = {
+"ds": "",
+"fdgdfgdfg": "",
+"wdtfds": ""
+}
+
+[node name="Label4" type="Label" parent="untitled/ScrollContainer/VBoxContainer/Button"]
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = 175.526
+margin_top = 18.4774
+margin_right = 209.526
+margin_bottom = 16.4774
+size_flags_horizontal = 5
+size_flags_stretch_ratio = 0.0
+text = "hello"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HBoxContainer" type="HBoxContainer" parent="untitled"]
+margin_left = -269.0
+margin_top = 102.0
+margin_right = -71.0
+margin_bottom = 174.0
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 9.3
+custom_constants/separation = 1
+__meta__ = {
+"cx": "",
+"xv": [  ]
+}
+
+[node name="Panel" type="Panel" parent="untitled/HBoxContainer"]
+modulate = Color( 0.145098, 0.133333, 0.141176, 1 )
+margin_right = 165.0
+margin_bottom = 72.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label5" type="Label" parent="untitled/HBoxContainer"]
+margin_left = 166.0
+margin_top = 29.0
+margin_right = 198.0
+margin_bottom = 43.0
+text = "hello"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LineEdit" type="LineEdit" parent="untitled"]
+show_behind_parent = true
+margin_left = 195.398
+margin_top = 331.557
+margin_right = 445.398
+margin_bottom = 371.557
+size_flags_horizontal = 3
+size_flags_vertical = 7
+text = "thisisvalue"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HBoxContainer" type="HBoxContainer" parent="untitled/LineEdit"]
+margin_right = 28.0
+margin_bottom = 14.0
+__meta__ = {
+"_edit_use_anchors_": false,
+"dfg": "",
+"dfgff": "",
+"jhkk": ""
+}
+
+[node name="Container" type="Container" parent="."]
+margin_left = -394.0
+margin_top = -86.0
+margin_right = -394.0
+margin_bottom = -86.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ConfirmationDialog" type="ConfirmationDialog" parent="."]
+visible = true
+margin_left = 115.903
+margin_top = 121.236
+margin_right = 315.903
+margin_bottom = 191.236
+dialog_text = "wdtwert"
+__meta__ = {
+"_edit_use_anchors_": false,
+"dsdfds": "sdfsdf"
+}
+
+[node name="Control" type="Control" parent="."]
+margin_left = -12.8299
+margin_top = 255.432
+margin_right = 27.1701
+margin_bottom = 295.432
+__meta__ = {
+"_edit_use_anchors_": false,
+"mustbestring": {
+"1": Object(Label,"_import_path":NodePath(""),"pause_mode":0,"process_priority":0,"visible":true,"modulate":Color( 1, 1, 1, 1 ),"self_modulate":Color( 1, 1, 1, 1 ),"show_behind_parent":false,"light_mask":1,"material":null,"use_parent_material":false,"anchor_left":0.0,"anchor_top":0.0,"anchor_right":0.0,"anchor_bottom":0.0,"margin_left":0.0,"margin_top":0.0,"margin_right":0.0,"margin_bottom":0.0,"grow_horizontal":1,"grow_vertical":1,"rect_min_size":Vector2( 0, 0 ),"rect_rotation":0.0,"rect_scale":Vector2( 1, 1 ),"rect_pivot_offset":Vector2( 0, 0 ),"rect_clip_content":false,"hint_tooltip":"","focus_neighbour_left":NodePath(""),"focus_neighbour_top":NodePath(""),"focus_neighbour_right":NodePath(""),"focus_neighbour_bottom":NodePath(""),"focus_next":NodePath(""),"focus_previous":NodePath(""),"focus_mode":0,"mouse_filter":2,"mouse_default_cursor_shape":0,"size_flags_horizontal":1,"size_flags_vertical":4,"size_flags_stretch_ratio":1.0,"theme":null,"text":"","align":0,"valign":0,"autowrap":false,"clip_text":false,"uppercase":false,"percent_visible":1.0,"lines_skipped":0,"max_lines_visible":-1,"script":null)
+,
+"55gvfgjhkj": Quat( 1, 1, 1, 1 ),
+"False": "myval3",
+"newwww": ""
+}
+}
+
+[node name="LineEdit" type="LineEdit" parent="Control"]
+margin_right = 58.0
+margin_bottom = 24.0
+text = "jgjhgj"
+__meta__ = {
+"_edit_use_anchors_": false,
+"mustbestring": {
+"1": Object(Label,"_import_path":NodePath(""),"pause_mode":0,"process_priority":0,"visible":true,"modulate":Color( 1, 1, 1, 1 ),"self_modulate":Color( 1, 1, 1, 1 ),"show_behind_parent":false,"light_mask":1,"material":null,"use_parent_material":false,"anchor_left":0.0,"anchor_top":0.0,"anchor_right":0.0,"anchor_bottom":0.0,"margin_left":0.0,"margin_top":0.0,"margin_right":0.0,"margin_bottom":0.0,"grow_horizontal":1,"grow_vertical":1,"rect_min_size":Vector2( 0, 0 ),"rect_rotation":0.0,"rect_scale":Vector2( 1, 1 ),"rect_pivot_offset":Vector2( 0, 0 ),"rect_clip_content":false,"hint_tooltip":"","focus_neighbour_left":NodePath(""),"focus_neighbour_top":NodePath(""),"focus_neighbour_right":NodePath(""),"focus_neighbour_bottom":NodePath(""),"focus_next":NodePath(""),"focus_previous":NodePath(""),"focus_mode":0,"mouse_filter":2,"mouse_default_cursor_shape":0,"size_flags_horizontal":1,"size_flags_vertical":4,"size_flags_stretch_ratio":1.0,"theme":null,"text":"","align":0,"valign":0,"autowrap":false,"clip_text":false,"uppercase":false,"percent_visible":1.0,"lines_skipped":0,"max_lines_visible":-1,"script":null)
+,
+"55": Quat( 1, 1, 1, 1 ),
+"False": "myval3",
+"hjwedslfsdfsdl": "",
+"jkh": ""
+}
+}
+
+[node name="LineEdit" type="LineEdit" parent="."]
+margin_left = 768.447
+margin_top = 103.029
+margin_right = 826.447
+margin_bottom = 127.029
+__meta__ = {
+"_edit_use_anchors_": false,
+"df": "",
+"s": "",
+"sd": "",
+"sdf": "",
+"sdfdf": "",
+"sdfsdfdsfsdf": "",
+"sfdg": ""
+}
+
+[node name="PopupMenu2" type="PopupMenu" parent="LineEdit"]
+margin_right = 20.0
+margin_bottom = 20.0
