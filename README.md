@@ -16,6 +16,7 @@ INSTALL
 
 TODO
 ----
+- allows edit but doesn't save on inherited nodes (e.g. from imported fbx files)
 - update metadata at runtime (while game is running)
 
 BUGS
