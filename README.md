@@ -17,6 +17,7 @@ INSTALL
 TODO
 ----
 - update metadata at runtime (while game is running)
+- implement a search browser for same or similar entries on all nodes or same level
 
 BUGS
 ----
@@ -39,3 +40,4 @@ You shouldn't touch underscored stuff that was already there, it is from the eng
 
 LICENSE
 -------
+MIT
