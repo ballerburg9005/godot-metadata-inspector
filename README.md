@@ -34,7 +34,7 @@ HOW TO USE
 6. Now you can copy the absolute path to the entry to your clipboard from the control menu and use it in other scripts
 7. The functions to manipulate metadata are documented in Godot in the class Object (has_meta(), get_meta(), get_meta_list(), set_meta(), remove_meta())
 
-You shouldn't touch underscored stuff that was already there, something like _____node_no_anchor_, it is from the engine and might break things
+You shouldn't touch underscored stuff that was already there, something like ___node_no_anchor___, it is from the engine and might break things
 
 
 LICENSE
