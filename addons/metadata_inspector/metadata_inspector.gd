@@ -26,7 +26,7 @@ var global_shortcuts = [KEY_DELETE, KEY_Z, KEY_Z, KEY_UP, KEY_DOWN, KEY_C]
 var global_mods      = ["c", "c", "cs", "c", "c", "cs"]
 
 var prev_focus_rootbox
-var last_focus_rootbox 
+var last_focus_rootbox
 
 func _enter_tree():
 
@@ -356,9 +356,9 @@ func update_from_textbox(obj, tpath, metavals):
 		
 	if ( 	(isnew)
 		and (val.length() == 0 or not obj.get_node("./textbox_val").editable)
-		and (key.length() == 0 or not obj.get_node("./textbox_key").editable) 
+		and (key.length() == 0 or not obj.get_node("./textbox_key").editable)
 		and (not obj.get_node("./textbox_val").has_meta("type"))
-		): 
+		):
 		return true
 
 	return store_in_meta_dict_recursively(metavals, [] + tpath, save_key, save_val)
@@ -576,7 +576,7 @@ func ui_create_row(tbox, tkey, tval, isnew, editables, tpath, tfocus):
 	
 	dbox.add_child(textbox1)
 
-	var collection_hint 
+	var collection_hint
 	var brackets = []
 	
 	if typeof(tval) == TYPE_DICTIONARY:

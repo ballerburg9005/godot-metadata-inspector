@@ -1,6 +1,6 @@
 extends Node
 
-var counter = 0 
+var counter = 0
 
 func _ready():
 	print("REDY")
