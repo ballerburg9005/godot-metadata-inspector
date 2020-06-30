@@ -6,7 +6,7 @@ This Godot 3.2 / 3.1 Plugin allows you to view and edit hidden Metadata.
 You can use this most effectively to add custom variables to any node you want without using or attaching any scripts.
 
 
-[![demo1](/demo1.jpg)](#)
+[![demo1](screenshots/demo1.jpg)](#)
 
 INSTALL
 -------
@@ -28,7 +28,7 @@ HOW TO USE
 ----------
 
 1. Choose the "Meta" tab next to the Inspector & Node tab (upper right corner)
-2. Now you can enter a key (left side) : value (right side) pair 
+2. Now you can enter a key (left side) : value (right side) pair
 3. When right-clicking the key textbox, you will get a "control menu" for the entry (delete, undo, redo, move up/down, copy path)
 4. When right-clicking the value textbox, you will get a menu to change the type of the value (this includes dictionary and array)
 5. If you didn't choose a type, Metadata Inspector will auto-detect the type (1 is int, 1.0 is real, False is bool, #FF00FF is color, 1.0,1 is Vec2 and so forth)
