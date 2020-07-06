@@ -6,7 +6,7 @@ This Godot 3.2 / 3.1 Plugin allows you to view and edit hidden Metadata.
 You can use this most effectively to add custom variables to any node you want without using or attaching any scripts.
 
 
-[![demo1](/demo1.jpg)](#)
+[![demo1](delme/demo1.jpg)](#) [![demo2](delme/demo2.jpg)](#)
 
 INSTALL
 -------
@@ -21,8 +21,6 @@ TODO
 
 BUGS
 ----
-- allows edit but doesn't save on sub-scenes from parent scene (fix: block edit)
-- allows edit but doesn't save on inherited nodes (e.g. from imported fbx files)
 - vbox suddenly disappeared for seriously no reason and totally impossible by code 2020-05-15
 
 HOW TO USE

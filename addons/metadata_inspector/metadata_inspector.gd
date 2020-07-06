@@ -77,6 +77,7 @@ func get_metavals(n):
 
 
 func update_node(n, act, save_metavals, focus):
+	n.set_meta("friends", [n.get_node("Character-Sprite")])
 	#print(n.name+" : "+str(act)+" : "+str(save_metavals)+" : "+str(focus))
 	#print("Updating: "+n.name)
 	#n.set_meta("mustbestring", {1.0: Label.new(), 55 : Quat(1,1,1,1), false: "myval3"})
