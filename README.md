@@ -21,6 +21,7 @@ TODO
 
 BUGS
 ----
+- allows edit but doesn't save on sub-scenes from parent scene (fix: block edit)
 - allows edit but doesn't save on inherited nodes (e.g. from imported fbx files)
 - vbox suddenly disappeared for seriously no reason and totally impossible by code 2020-05-15
 
