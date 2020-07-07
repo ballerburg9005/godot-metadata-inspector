@@ -16,8 +16,11 @@ INSTALL
 
 TODO
 ----
-- update metadata at runtime (while game is running)
 - implement a search browser for same or similar entries on all nodes or same level
+
+NODO
+----
+- update metadata at runtime (while game is running) -> ScriptEditorDebuggerInspectedObject has only the props you see in the Remote Inspector, no metadata, just impossible
 
 BUGS
 ----
