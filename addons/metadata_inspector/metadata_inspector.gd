@@ -8,7 +8,6 @@ var nonodelabel
 var vbox
 var plugin : EditorInspectorPlugin
 
-#var realtime_updater : Node
 
 var is_metadata_inspector = false
 
@@ -35,9 +34,6 @@ func _enter_tree():
 
 	plugin = preload("./CustomInspectorPlugin.gd").new()
 	add_inspector_plugin(plugin)
-
-#	realtime_updater = preload("./RealtimeUpdater.gd").new()
-#	self.add_child(realtime_updater)
 
 	metapanel = ScrollContainer.new()
 	metapanel.name = "Meta"
