@@ -16,15 +16,12 @@ INSTALL
 
 TODO
 ----
-- implement a search browser for same or similar entries on all nodes or same level
+- implement a search browser
 
 NODO
 ----
-- update metadata at runtime (while game is running) -> ScriptEditorDebuggerInspectedObject has only the props you see in the Remote Inspector, no metadata, just impossible
+- update metadata at runtime (remote variable)
 
-BUGS
-----
-- vbox suddenly disappeared for seriously no reason and totally impossible by code 2020-05-15
 
 HOW TO USE
 ----------
@@ -38,7 +35,7 @@ HOW TO USE
 7. Now you can copy the absolute path to the entry to your clipboard from the control menu and use it in other scripts
 8. The functions to manipulate metadata are documented in Godot in the class Object (has_meta(), get_meta(), get_meta_list(), set_meta(), remove_meta())
 
-You shouldn't touch underscored stuff that was already there, it is from the engine and might break things
+You shouldn't touch underscored stuff that was already there, it is from the engine and might break things.
 
 
 LICENSE
