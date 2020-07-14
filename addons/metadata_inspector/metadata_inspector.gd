@@ -14,11 +14,7 @@ var is_metadata_inspector = false
 var activenode = null
 var lastfocus = [[], ""]
 
-
 var l = TypeFormattingLogic.new()
-
-var fpscounter = 0
-
 
 var global_choices   = ["delete", "undo", "redo", "move↑", "move↓", "path?"]
 var global_shortcuts = [KEY_DELETE, KEY_Z, KEY_Z, KEY_UP, KEY_DOWN, KEY_C]
@@ -26,6 +22,7 @@ var global_mods      = ["c", "c", "cs", "c", "c", "cs"]
 
 var prev_focus_rootbox
 var last_focus_rootbox 
+
 
 func _enter_tree():
 
@@ -73,12 +70,6 @@ func get_metavals(n):
 
 
 func update_node(n, act, save_metavals, focus):
-	#n.set_meta("friends", [n.get_node("Character-Sprite")])
-	#print(n.name+" : "+str(act)+" : "+str(save_metavals)+" : "+str(focus))
-	#print("Updating: "+n.name)
-	#n.set_meta("mustbestring", {1.0: Label.new(), 55 : Quat(1,1,1,1), false: "myval3"})
-	#n.set_meta("nestedshit", ["array1", "array2", "array3", {"thisisdictkey1": "thisisdictval1", "thisisdictkey2": "thisisdictval2", "shit": [1,2,3,4,5]}])
-	
 	for oldentry in vbox.get_children():
 		vbox.remove_child(oldentry)
 		oldentry.queue_free()
@@ -123,9 +114,9 @@ func update_node(n, act, save_metavals, focus):
 
 
 func set_nonodelabel(txt):
-		nonodelabel.text = txt
-		vbox.visible = false
-		nonodelabel.visible = true
+	nonodelabel.text = txt
+	vbox.visible = false
+	nonodelabel.visible = true
 
 
 func ui_copy_path_to_clipboard(obj):
@@ -152,8 +143,6 @@ func ui_copy_path_to_clipboard(obj):
 			
 		print(result)
 		OS.set_clipboard(result)
-	
-
 
 
 func delete_entry_from_ui_and_update(obj):
@@ -192,6 +181,7 @@ func delete_entry_from_ui_and_update(obj):
 		for n in children:
 			parent.add_child(n)
 		textbox_keyorval.grab_focus()
+
 
 func move_entry_inside_ui_and_update(obj, direction):
 	var rootbox = obj.get_parent().get_parent()
@@ -286,6 +276,7 @@ func update_from_textboxes_recursively(tbox, tpath, metavals):
 			failure += update_from_textboxes_recursively(n, path, metavals)
 	return failure
 
+
 func save_focus(obj, tpath, isnew):
 	var poppedpath = [] + tpath
 	poppedpath.pop_back()
@@ -304,6 +295,7 @@ func save_focus(obj, tpath, isnew):
 		else:
 			lastfocus[0] = tpath
 			lastfocus[1] = "val"
+
 
 func update_from_textbox(obj, tpath, metavals):
 
@@ -706,18 +698,6 @@ func count_entries(v, c):
 			c += count_entries(v[i], 0)
 	c += 1
 	return c
-
-
-
-#func _process(delta):
-#	fpscounter = (fpscounter + 1)%999999999
-#	if fpscounter%30 == 0:
-#		print(fpscounter)
-
-
-
-
-
 
 
 #func get_plugin_icon():

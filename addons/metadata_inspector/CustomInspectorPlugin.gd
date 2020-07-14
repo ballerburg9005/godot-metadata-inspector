@@ -6,8 +6,9 @@ var someobject = null
 # this faux EditorInspectorPlugin is necessary to update the real EditorPlugin at the right time
 func can_handle(object):
 	
-	if object.is_class("ScriptEditorDebuggerInspectedObject"):
-		print(object.get_remote_object_id())
+#	if object.is_class("ScriptEditorDebuggerInspectedObject"):
+#		print(object.get_remote_object_id())
+
 	if object.is_class("Node"):
 		someobject = object
 		var metadata_inspector = get_metadata_inspector(object)
