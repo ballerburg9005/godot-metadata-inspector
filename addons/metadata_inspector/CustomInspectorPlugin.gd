@@ -9,7 +9,7 @@ func can_handle(object):
 #	if object.is_class("ScriptEditorDebuggerInspectedObject"):
 #		print(object.get_remote_object_id())
 
-	if object.is_class("Node"):
+	if object is Node:
 		someobject = object
 		var metadata_inspector = get_metadata_inspector(object)
 		if object.get_filename().length() > 0 and object.get_filename() != object.get_tree().edited_scene_root.filename:
