@@ -14,7 +14,7 @@ func can_handle(object):
 		if object.get_filename().length() > 0 and object.get_filename() != object.get_tree().edited_scene_root.filename:
 			metadata_inspector.set_nonodelabel("Please edit the metadata from inside the scene of this instance.")
 		else:
-			metadata_inspector.update_node(object, ["load"], {}, [["****---^^^NO_FOCUS_NO_FOCUS_NO_FOCUS^^---****"], "new"])
+			metadata_inspector.update_node(object, ["load"], {}, [["^^***-****-- NO DEFAULT FOCUS --****-***^^"], "new"])
 	else:
 		if is_instance_valid(someobject):
 			var metadata_inspector = get_metadata_inspector(someobject)
