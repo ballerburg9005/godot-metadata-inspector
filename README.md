@@ -38,7 +38,7 @@ HOW TO USE
 
 You shouldn't touch underscored stuff that was already there, it is from the engine and might break things.
 
-*Pro tip:* You can open the Project's .tscn files with a text editor and edit the \_\_meta\_\_ dictionary as plain text. In case you need to e.g. completely restructure your data or using the GUI is somehow at some point inconvenient.
+*Pro tip:* You can open the Project's .tscn files with a text editor and edit the \_\_meta\_\_ dictionary as plain text. In case you need to e.g. completely restructure your data or using the GUI is somehow is inconvenient.
 
 LICENSE
 -------
