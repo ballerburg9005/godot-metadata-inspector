@@ -17,10 +17,11 @@ INSTALL
 TODO
 ----
 - implement a search browser
+- copy rows from one node to another
 
 NODO
 ----
-- update metadata at runtime (remote variable)
+- update metadata at runtime (remote variable) NOT POSSIBLE
 
 
 HOW TO USE
